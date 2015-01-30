@@ -20,6 +20,9 @@ public class Controls /*implements SubSystem*/{
 		double y=left.getRawAxis(1);
 		double z=right.getRawAxis(2);
 		double[] heading = {-x,y,-z};
+		for(int i=0;i<3;i++){
+			heading[i]=deadBand(heading[i]);
+		}
 		return heading;
 	}
 	
