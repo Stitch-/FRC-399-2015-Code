@@ -11,10 +11,13 @@ import org.usfirst.frc.team9399.util.Toggler;
 public class Robot extends IterativeRobot {
 	
 	SuperSystem ss; //class that contains all subsystems. Mainly for instantiation of subsystems.
-	int driveState = DriveTrain.states.FIELD_CENTRIC; //choose whether to drive with the gyroscope, mainly for troubleshooting.
+	static final int mode = DriveTrain.states.FIELD_CENTRIC;
+	int driveState = mode; //choose whether to drive with the gyroscope, mainly for troubleshooting.
 	boolean[] padButtons;
 	boolean tank;
 	Toggler t=new Toggler();
+	Toggler turbo=new Toggler();
+	Toggler roboCent=new Toggler();
 	FileLogger captainsLog = new FileLogger("/home/lvuser/logs/"); //Intstantiate's Justin's file logger. 
 																//all console outputs will be saved to a log.
 	public void robotInit() {
@@ -25,7 +28,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		ss.drivetrain.setState(driveState);
 	}
-    
+
     public void autonomousPeriodic(){
 
     }
@@ -37,19 +40,31 @@ public class Robot extends IterativeRobot {
     }
    
     public void teleopPeriodic(){
-    	boolean toggleTank = ss.control.getButton(Controls.pads.LEFT, 12) ||  ss.control.getButton(Controls.pads.RIGHT, 12);
+    	boolean toggleTank =  ss.control.getButton(Controls.pads.RIGHT, 12);
+    	boolean toggleTurbo = ss.control.getButton(Controls.pads.LEFT, 12);
+    	boolean toggleCentric = ss.control.getButton(Controls.pads.RIGHT, 15);
     	t.set(toggleTank);
-    	
+    	turbo.set(toggleTurbo);
+    	roboCent.set(toggleCentric);
+   
     	double[] heading;
-
-    	
+   
     	if(t.get()){
     		driveState=DriveTrain.states.TANK_DRIVE;
     		heading = ss.control.getHeadingTank();
     	}else{
-    		driveState=DriveTrain.states.FIELD_CENTRIC;
+    		if(roboCent.get()){
+    			driveState=DriveTrain.states.ROBOT_CENTRIC;
+    		}else{
+        		driveState=mode;    			
+    		}
     		heading=ss.control.getHeading();
-
+    	}
+    	
+    	if(turbo.get()){
+    		ss.drivetrain.setTurbo(true);
+    	}else{
+    		ss.drivetrain.setTurbo(false);
     	}
     	//System.out.println(heading[0]+ " "+heading[1]);
     	/*padButtons=ss.toggleControls();

@@ -7,8 +7,8 @@ public abstract class Config {
 		public static final int FRONT_LEFT=6;
 		public static final int REAR_RIGHT=4;
 		public static final int REAR_LEFT=9;
-		public static final double P_TUNING = 0;
-		public static final double I_TUNING = 0;
+		public static final double P_TUNING = 0.000001;
+		public static final double I_TUNING = 0.1;
 		public static final double D_TUNING = 0;
 	}
 	

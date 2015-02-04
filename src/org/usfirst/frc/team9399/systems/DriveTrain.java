@@ -8,16 +8,19 @@ import org.usfirst.frc.team9399.util.SubSystem;
 import org.usfirst.frc.team9399.util.PIDLoop;
 
 public class DriveTrain extends SubSystem{
+	public static final double nonTurboMax=0.5;
+	
 	VictorSP flMotor,frMotor,blMotor,brMotor;
 	IMU gyro = IMU.getInstance();
 	double[] commandVector = {0,0,0}; //x,y,rotation
 	double[] powers = new double[4];
 	int orbitRotation = 0;
 	PIDLoop pid;
+	boolean turbo=false;
 	
 	final double cWidth=25; //inches
 	final double cLength=28.5;
-	final double wDiameter = 4; // Inch wheels
+	final double wDiameter = 6; // Inch wheels
 	final double wRadius = wDiameter / 2.0;
 	
 	// For details visit 
@@ -73,16 +76,19 @@ public class DriveTrain extends SubSystem{
 		double[] vectorOut = {0,0,0};
 		double angCurr = gyro.IMUA.getYaw();
 		double angOut = pid.correct(angTar, angCurr);
+		System.out.println(angOut);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
 		vectorOut[2]=angOut;
 		setHeading(vectorOut);
 	}
 	
+	public void setTurbo(boolean in){
+		turbo=in;
+	}
 	
 	protected void setMotors(){
-
-		double max = 1;
+		double max=1;
 		for(int wheel = 0; wheel < 4; wheel++)
 		{
 			powers[wheel] = 0;
@@ -90,7 +96,12 @@ public class DriveTrain extends SubSystem{
 			{
 				powers[wheel] += commandVector[i] * invMatrix[wheel][i];
 			}
-			max = Math.max(max, Math.abs(powers[wheel]));
+			if(turbo){
+				max = Math.max(max, Math.abs(powers[wheel]));
+			}
+		}
+		if(!turbo){
+			max=nonTurboMax;
 		}
 		
 		

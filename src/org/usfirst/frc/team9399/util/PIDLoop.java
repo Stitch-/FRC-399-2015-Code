@@ -37,17 +37,18 @@ public class PIDLoop {
                 }
             }
 		
-            
+        /*    
         p = SmartDashboard.getNumber("P");    
         i = SmartDashboard.getNumber("I"); 
         d = SmartDashboard.getNumber("D"); 
+        */
 		
 		long time = System.currentTimeMillis();
 		deltaTime = time-timeMem;
 		prop=p*err;
 		inte=i*(inte+(err*deltaTime));
 		der=d*((err - errMem)/deltaTime);
-		out=curr+prop+inte+der;
+		out=prop+inte+der; //+curr;
 		if(out > 1) out = 1;
 		else if(out < -1) out = -1;
 		SmartDashboard.putNumber("OUT", out);
