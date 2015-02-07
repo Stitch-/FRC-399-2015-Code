@@ -1,12 +1,12 @@
 package org.usfirst.frc.team9399.systems;
 
 import edu.wpi.first.wpilibj.Compressor;
+
 import org.usfirst.frc.team9399.util.SubSystem;
 
 public class Pneumatics extends SubSystem {
 	
 	Compressor compressor;
-	int state = states.DISABLED;
 	int stateMem=states.DISABLED;
 	
 	public Pneumatics(int comp){

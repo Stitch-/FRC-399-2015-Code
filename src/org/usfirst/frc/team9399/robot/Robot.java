@@ -3,6 +3,10 @@ package org.usfirst.frc.team9399.robot;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 //import edu.wpi.first.wpilibj.smartdashboard.*;
+
+
+
+
 import org.usfirst.frc.team9399.systems.*;
 import org.usfirst.frc.team9399.util.FileLogger;
 import org.usfirst.frc.team9399.util.Toggler;
@@ -12,10 +16,10 @@ public class Robot extends IterativeRobot {
 	
 	SuperSystem ss; //class that contains all subsystems. Mainly for instantiation of subsystems.
 	static final int mode = DriveTrain.states.FIELD_CENTRIC;
-	int driveState = mode; //choose whether to drive with the gyroscope, mainly for troubleshooting.
+	int driveState = mode; //choose whether to drive with the gyroscope and/or pid, mainly for troubleshooting.
 	boolean[] padButtons;
 	boolean tank;
-	Toggler t=new Toggler();
+	Toggler tankDrive=new Toggler();
 	Toggler turbo=new Toggler();
 	Toggler roboCent=new Toggler();
 	FileLogger captainsLog = new FileLogger("/home/lvuser/logs/"); //Intstantiate's Justin's file logger. 
@@ -36,20 +40,19 @@ public class Robot extends IterativeRobot {
     public void teleopInit() {
     	ss.drivetrain.setState(driveState);
     	//ss.compressor.setState(Pneumatics.states.ENABLED);
-    	ss.lifter.setState(Lifter.states.BRAKE);
     }
    
     public void teleopPeriodic(){
     	boolean toggleTank =  ss.control.getButton(Controls.pads.RIGHT, 12);
     	boolean toggleTurbo = ss.control.getButton(Controls.pads.LEFT, 12);
     	boolean toggleCentric = ss.control.getButton(Controls.pads.RIGHT, 15);
-    	t.set(toggleTank);
+    	tankDrive.set(toggleTank);
     	turbo.set(toggleTurbo);
     	roboCent.set(toggleCentric);
    
     	double[] heading;
    
-    	if(t.get()){
+    	if(tankDrive.get()){
     		driveState=DriveTrain.states.TANK_DRIVE;
     		heading = ss.control.getHeadingTank();
     	}else{
@@ -61,11 +64,15 @@ public class Robot extends IterativeRobot {
     		heading=ss.control.getHeading();
     	}
     	
+    	ss.sucker.setState(Intake.states.ACTIVE);
+    	ss.funkyClips.setState(Lifter.states.ACTIVE);
+    	
     	if(turbo.get()){
     		ss.drivetrain.setTurbo(true);
     	}else{
     		ss.drivetrain.setTurbo(false);
     	}
+    	
     	//System.out.println(heading[0]+ " "+heading[1]);
     	/*padButtons=ss.toggleControls();
     	
@@ -76,10 +83,13 @@ public class Robot extends IterativeRobot {
     	ss.wingeyBits.actuateHook(Wings.wings.RIGHT,padButtons[4]);
     	*/
     	ss.drivetrain.setHeading(heading);
+    	ss.sucker.setWheels(ss.control.getOpPadLeft()[Config.KeyMap.INTAKE_AXIS]);
+    	ss.funkyClips.setSpeed(-ss.control.getOpPadRight()[Config.KeyMap.LIFTER_AXIS]);
     	ss.drivetrain.run();
+    	ss.sucker.run();
     	/*ss.compressor.run();
-    	ss.wingeyBits.run();
-    	ss.lifter.run();*/
+    	ss.wingeyBits.run();*/
+    	ss.funkyClips.run();
     	if(ss.control.isResetPressed() ){ // Reset the gyroscope when both triggers are pressed.
     		ss.drivetrain.setState(DriveTrain.states.RESET_FIELD_REF);
     	}else if(ss.drivetrain.getState() != driveState){
@@ -89,6 +99,8 @@ public class Robot extends IterativeRobot {
     
     public void disabledInit() {
     	ss.drivetrain.setState(DriveTrain.states.DISABLED);
+    	ss.sucker.setState(Intake.states.DISABLED);
+    	ss.funkyClips.setState(Lifter.states.DISABLED);
     	//ss.compressor.setState(Pneumatics.states.DISABLED);
     }
     

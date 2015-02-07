@@ -44,15 +44,15 @@ public class Controls /*extends SubSystem*/{
 	}
 	
 	public double[] getOpPadRight(){
-		double x=op.getRawAxis(0);
-		double y=op.getRawAxis(1);
+		double x=op.getRawAxis(2);
+		double y=op.getRawAxis(3);
 		double[] out={x,y};
 		return out;
 	}
 	
 	public double[] getOpPadLeft(){
-		double x=op.getRawAxis(2);
-		double y=op.getRawAxis(3);
+		double x=op.getRawAxis(0);
+		double y=op.getRawAxis(1);
 		double[] out={x,y};
 		return out;
 	}

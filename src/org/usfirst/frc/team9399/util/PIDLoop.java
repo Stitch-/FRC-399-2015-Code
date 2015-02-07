@@ -10,6 +10,7 @@ public class PIDLoop {
 	double targ,curr,errMem;
 	double out=0;
 	long deltaTime,timeMem=0;
+	int mult=1;
 	
 	
 	public PIDLoop(double p,double i,double d){
@@ -44,7 +45,11 @@ public class PIDLoop {
         */
 		
 		long time = System.currentTimeMillis();
-		deltaTime = time-timeMem;
+		if(timeMem!=0){
+			deltaTime = time-timeMem;
+		}else{
+			deltaTime = 1;
+		}
 		prop=p*err;
 		inte=i*(inte+(err*deltaTime));
 		der=d*((err - errMem)/deltaTime);
@@ -56,6 +61,11 @@ public class PIDLoop {
 	}
 	
 	public double correct(double targ, double curr){
+		/*if(curr>targ){
+			mult=-1;
+		}else{
+			mult=1;
+		}*/
 		this.targ=targ;
 		this.curr=curr;
 		tick(targ-curr);

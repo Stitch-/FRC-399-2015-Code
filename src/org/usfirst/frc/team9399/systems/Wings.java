@@ -1,6 +1,7 @@
 package org.usfirst.frc.team9399.systems;
 
 import org.usfirst.frc.team9399.util.SubSystem;
+
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogInput;

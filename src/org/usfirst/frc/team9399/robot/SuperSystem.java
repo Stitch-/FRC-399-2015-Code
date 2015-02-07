@@ -8,17 +8,17 @@ public class SuperSystem {
 	public DriveTrain drivetrain;
 	//public Pneumatics compressor;
 	public Wings wingeyBits;
-	public Lifter lifter;
+	public Lifter funkyClips;
+	public Intake sucker;
 	Toggler[] t=new Toggler[5];
 	
 	public SuperSystem(){
 		control = new Controls(Config.Controls.JOY_LEFT,Config.Controls.JOY_RIGHT,Config.Controls.OPERATOR_PAD,
 				Config.Controls.DEADBAND);
 		
-		drivetrain = new DriveTrain(Config.DriveTrain.FRONT_LEFT,Config.DriveTrain.FRONT_RIGHT,
-				Config.DriveTrain.REAR_LEFT,Config.DriveTrain.REAR_RIGHT);
+		drivetrain = new DriveTrain(Config.DriveTrain.PORTS,Config.DriveTrain.ENC_PORTS);
 		drivetrain.setState(DriveTrain.states.DISABLED);
-		drivetrain.initPid(Config.DriveTrain.P_TUNING, Config.DriveTrain.I_TUNING, Config.DriveTrain.D_TUNING);
+		drivetrain.initPid(Config.DriveTrain.GYRO_PID,Config.DriveTrain.WHEEL_PID);
 		
 		//compressor=new Pneumatics(Config.Pneumatics.COMP_ID);
 		
@@ -26,9 +26,12 @@ public class SuperSystem {
 				Config.Wings.SWITCH_THRESHOLD,Config.Pneumatics.COMP_ID,Config.Wings.MOTOR_SPEED,Config.Wings.BUTTON_PORTS);
 		wingeyBits.setState(Wings.states.RETRACTED);
 		
-		lifter=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORTS,Config.Lifter.ENCODER_PORTS,
-				Config.Lifter.LEAD_SCREW_CONSTANT,Config.Lifter.ENCODER_TURNS,Config.Lifter.MAX_HEIGHT); 
-		lifter.setState(Lifter.states.BRAKE);
+		funkyClips=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORTS,Config.Lifter.ENCODER_PORTS,
+				Config.Lifter.LEAD_SCREW_CONSTANT,Config.Lifter.ENCODER_TURNS,Config.Lifter.MAX_HEIGHT,
+				Config.Lifter.LIMIT_SWITCH_PORT); 
+		funkyClips.setState(Lifter.states.DISABLED);
+		
+		sucker=new Intake(Config.Intake.leftPort,Config.Intake.rightPort);
 		//instantiate all the things
 	}
 	

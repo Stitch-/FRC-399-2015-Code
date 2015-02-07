@@ -2,21 +2,24 @@ package org.usfirst.frc.team9399.systems;
 
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Encoder;
 
-import org.usfirst.frc.team9399.util.SubSystem;
-//import org.usfirst.frc.team9399.util.PhoenixMath;
 import org.usfirst.frc.team9399.util.PIDLoop;
+import org.usfirst.frc.team9399.util.SubSystem;
 
 public class DriveTrain extends SubSystem{
-	public static final double nonTurboMax=0.5;
+	public static final double nonTurboMax=0.4; //max speed w/out turbo
 	
-	VictorSP flMotor,frMotor,blMotor,brMotor;
+	VictorSP[] motors=new VictorSP[4];
+	Encoder[] encoders=new Encoder[4];
 	IMU gyro = IMU.getInstance();
 	double[] commandVector = {0,0,0}; //x,y,rotation
 	double[] powers = new double[4];
 	int orbitRotation = 0;
-	PIDLoop pid;
+	PIDLoop pidAng;
+	PIDLoop pidWheel;
 	boolean turbo=false;
+	final boolean pidOnWheels=false;
 	
 	final double cWidth=25; //inches
 	final double cLength=28.5;
@@ -33,12 +36,16 @@ public class DriveTrain extends SubSystem{
 		{ 1, 1, -cRotK},
 	};
 	
-	
-	public DriveTrain(int FLPort, int FRPort, int BLPort, int BRPort){		
-		flMotor = new VictorSP(FLPort);
-		frMotor = new VictorSP(FRPort);
-		blMotor = new VictorSP(BLPort);
-		brMotor = new VictorSP(BRPort);
+	//fl.fr.bl.br
+	public DriveTrain(int[] ports, int[] encoderPorts){
+		int firstPort=0;
+		int lastPort=0;
+		for(int i=0;i<4;i++){
+			motors[i]=new VictorSP(ports[i]);
+			lastPort++;
+			//encoders[i]=new Encoder(firstPort,lastPort);
+			firstPort=lastPort+1;
+		}
 		calibrateGyro();
 	}
 	
@@ -50,11 +57,14 @@ public class DriveTrain extends SubSystem{
 		public static final int RESET_FIELD_REF = 3;
 		public static final int FIELD_CENTRIC_W_GYRO_HOLD = 4;
 		public static final int TANK_DRIVE=5;
+		public static final int FIELD_CENTRIC_SLOW_SPIN_UP=6;
 	}
 	
-	public void initPid(double p,double i,double d){
-		pid=new PIDLoop(p,i,d);
+	public void initPid(double[] gyro,double[] wheels){
+		pidAng=new PIDLoop(gyro[0],gyro[1],gyro[2]);
+		pidWheel=new PIDLoop(wheels[0],wheels[1],wheels[2]);
 	}
+	
 	
 	public void calibrateGyro(){
 		boolean isCal= true;
@@ -68,14 +78,13 @@ public class DriveTrain extends SubSystem{
 	
 	public void setHeading(double[] vector){
 		commandVector=vector;
-		commandVector[2]=commandVector[2]*0.5;
 		//System.out.println("Powers "+commandVector[0]+" "+commandVector[1]+" "+commandVector[2]);
 	}
 	
 	public void setHeadingAng(double[] vector, double angTar){
 		double[] vectorOut = {0,0,0};
 		double angCurr = gyro.IMUA.getYaw();
-		double angOut = pid.correct(angTar, angCurr);
+		double angOut = pidAng.correct(angTar, angCurr);
 		System.out.println(angOut);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
@@ -89,6 +98,10 @@ public class DriveTrain extends SubSystem{
 	
 	protected void setMotors(){
 		double max=1;
+		
+		if(!turbo){
+			max=nonTurboMax;
+		}
 		for(int wheel = 0; wheel < 4; wheel++)
 		{
 			powers[wheel] = 0;
@@ -100,21 +113,27 @@ public class DriveTrain extends SubSystem{
 				max = Math.max(max, Math.abs(powers[wheel]));
 			}
 		}
-		if(!turbo){
-			max=nonTurboMax;
-		}
 		
 		
 		for(int i = 0; i < 4; i ++)
 		{
-			powers[i] = powers[i]/max;
+			powers[i] = powers[i]*max;
 		}
 		
 		//PhoenixMath.clamp(-1.0, 1.0, powers);
-		flMotor.set(powers[0]);
+		for(int i=0;i<4;i++){
+			byte negate=1;
+			if(i%2!=0){
+				negate=-1;
+			}else{
+				negate=1;
+			}
+			motors[i].set(negate*powers[i]);
+		}
+		/*flMotor.set(powers[0]);
 		frMotor.set(-powers[1]);
 		blMotor.set(powers[2]);
-		brMotor.set(-powers[3]);
+		brMotor.set(-powers[3]);*/
 		
 		
 	}
@@ -132,8 +151,8 @@ public class DriveTrain extends SubSystem{
 		return rotated;
 	}
 	
-	double yawTarget = 45;
-	double twistToYawScalar = 0.002;
+	double yawTarget = 0;
+	double twistToYawScalar = 4;
 	
 	public void run(){
 		double[] rotated;
@@ -154,11 +173,25 @@ public class DriveTrain extends SubSystem{
 			break;
 			case states.FIELD_CENTRIC_W_GYRO_HOLD:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
-				//yawTarget += commandVector[2] * twistToYawScalar;
+				yawTarget += commandVector[2] * twistToYawScalar;
+				if (Math.abs(yawTarget)
+	                    > 180) {
+	                if (yawTarget > 0) {
+	                    yawTarget -= 360;
+	                } else {
+	                   yawTarget += 360;
+	                }
+	            }
 				setHeadingAng(rotated,yawTarget);
 			break;
 			case states.RESET_FIELD_REF:
 				gyro.IMUA.zeroYaw();
+				yawTarget=0;
+			break;
+			case states.FIELD_CENTRIC_SLOW_SPIN_UP:
+				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
+				commandVector[0] = rotated[0];
+				commandVector[1] = rotated[1];
 			break;
 		}
 		setMotors();

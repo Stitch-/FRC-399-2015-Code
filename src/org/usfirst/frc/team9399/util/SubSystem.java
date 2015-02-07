@@ -5,7 +5,7 @@ public abstract class SubSystem {
 	// an interface to allow easier implementation of subsystems. 
 	//TODO add a system to handle communication between systems.
 	
-	int state=0;
+	public int state=0;
 	
 	public abstract void run();
 	
