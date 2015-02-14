@@ -1,35 +1,48 @@
 package org.usfirst.frc.team9399.systems;
 
 import org.usfirst.frc.team9399.util.SubSystem;
+import org.usfirst.frc.team9399.util.PIDLoop;
 
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 public class Lifter extends SubSystem {
 	VictorSP[] motors=new VictorSP[2];
 	Solenoid[] sols = new Solenoid[2];
 	Encoder coder;
-	DigitalInput lowerLimitSwitch;
-	int turns;
-	double leadScrewConstant,maxHeight,minHeight;
+	AnalogInput lowerSwitch1,lowerSwitch2;
+	double leadScrewConstant,maxHeight,minHeight,deadband,startingAmp;
 	double speed=0;
-	
+	int threshold,c1,c2,turns;
+	PowerDistributionPanel pdp;
+	PIDLoop pidLoop;
 	public Lifter(int[] motorPorts,int[] solPorts,int[] encoderPorts,double constant,int turn,double max,
-			int switchPort){
+			int[] switchPorts,int threshold,double band,int[] terminals,double[] pidVals){
 		for(int i=0;i<2;i++){
 			motors[i]=new VictorSP(motorPorts[i]);
-			sols[i]=new Solenoid(solPorts[i]);
-			sols[i].set(false);
+			if(i==0){
+				sols[i]=new Solenoid(solPorts[i]);
+				sols[i].set(false);
+			}
 		}
-		lowerLimitSwitch = new DigitalInput(switchPort);
-		coder=new Encoder(encoderPorts[0],encoderPorts[1],false);
-		coder.reset(); //Lifter should be placed in lowest possible positions when starting.
+		pdp=new PowerDistributionPanel();
+		lowerSwitch1 = new AnalogInput(switchPorts[0]);
+		lowerSwitch2 = new AnalogInput(switchPorts[1]);
+		//coder=new Encoder(encoderPorts[0],encoderPorts[1],false);
+		//coder.reset(); //Lifter should be placed in lowest possible positions when starting.
 		leadScrewConstant=constant;
 		turns=turn;
 		maxHeight=max;
 		minHeight=0;
+		this.threshold=threshold;
+		deadband=band;
+		c1=terminals[0];
+		c2=terminals[1];
+		pidLoop=new PIDLoop(pidVals[0],pidVals[1],pidVals[2]);
+		startingAmp=getAmperage();
 	}
 	
 	public class states{
@@ -37,29 +50,29 @@ public class Lifter extends SubSystem {
 		public static final int ACTIVE=1;
 	}
 	
-	public double getLeadScrewDistance(){
+	/*public double getLeadScrewDistance(){
 		int count=coder.get();
 		double rotations=count/turns;
 		double distance=rotations*leadScrewConstant;
 		return distance;
-	}
+	}*/
 	
 	public void setSpeed(double in){
 		speed=in;
 	}
 	
 	public void actuateClaw(boolean open){
-		for(int i=0;i<2;i++){
-			sols[i].set(open);
-		}
+		sols[0].set(open);
 	}
 	
 	private void runMotors(){
-		boolean lowerVal=!lowerLimitSwitch.get();
-		int out=lowerVal ? 1:0;
-		System.out.println(out);
-		double motorSpeed = speed;
-		if(lowerVal && speed < 0)
+		boolean s1=lowerSwitch1.getValue() < threshold;
+		boolean s2=lowerSwitch2.getValue() < threshold;
+		boolean bandVal = speed < deadband && speed > -deadband;
+		boolean lowerVal = s1 || s2;
+		adjustSpeed();
+		double motorSpeed = speed;;
+		if((lowerVal && speed < 0)||bandVal)
 		{
 			motorSpeed = 0;
 		}
@@ -73,6 +86,17 @@ public class Lifter extends SubSystem {
 		}*/
 		
 		
+	}
+	private void adjustSpeed(){
+		double displacement=pidLoop.correct(startingAmp,getAmperage());
+		speed+=displacement;
+	}
+	
+	private double getAmperage(){
+		double a1=pdp.getCurrent(c1);
+		double a2=pdp.getCurrent(c2);
+		double out=Math.max(a1, a2);
+		return out;
 	}
 	
 	private void setMotors(double speed){

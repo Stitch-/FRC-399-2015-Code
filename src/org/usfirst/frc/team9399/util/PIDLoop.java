@@ -27,7 +27,7 @@ public class PIDLoop {
 	}
 	
 	
-	void tick(double err){
+	private void tick(double err){
 
             if (Math.abs(err)
                     > 180) {

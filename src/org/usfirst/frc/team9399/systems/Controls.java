@@ -4,7 +4,7 @@ package org.usfirst.frc.team9399.systems;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Controls /*extends SubSystem*/{
-	Joystick left,right,op;
+	public Joystick left,right,op;
 	final int resetButton = 1;
 	double band;
 	

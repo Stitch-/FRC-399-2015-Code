@@ -15,11 +15,14 @@ public class DriveTrain extends SubSystem{
 	IMU gyro = IMU.getInstance();
 	double[] commandVector = {0,0,0}; //x,y,rotation
 	double[] powers = new double[4];
+	int[] encoderPorts = new int[8];
 	int orbitRotation = 0;
+	boolean freed=true;
 	PIDLoop pidAng;
 	PIDLoop pidWheel;
 	boolean turbo=false;
 	final boolean pidOnWheels=false;
+	double ticksToInches;
 	
 	final double cWidth=25; //inches
 	final double cLength=28.5;
@@ -37,16 +40,14 @@ public class DriveTrain extends SubSystem{
 	};
 	
 	//fl.fr.bl.br
-	public DriveTrain(int[] ports, int[] encoderPorts){
-		int firstPort=0;
-		int lastPort=0;
+	public DriveTrain(int[] ports, int[] encoderPorts,double ticks){
+		this.encoderPorts=encoderPorts;
+		initEncoders();
 		for(int i=0;i<4;i++){
 			motors[i]=new VictorSP(ports[i]);
-			lastPort++;
-			//encoders[i]=new Encoder(firstPort,lastPort);
-			firstPort=lastPort+1;
 		}
 		calibrateGyro();
+		ticksToInches=ticks;
 	}
 	
 	
@@ -57,12 +58,33 @@ public class DriveTrain extends SubSystem{
 		public static final int RESET_FIELD_REF = 3;
 		public static final int FIELD_CENTRIC_W_GYRO_HOLD = 4;
 		public static final int TANK_DRIVE=5;
-		public static final int FIELD_CENTRIC_SLOW_SPIN_UP=6;
+		public static final int FIELD_CENTRIC_WHEEL_CORRECT=6;
+		public static final int PRINT_FROM_ENCODERS=7;
 	}
 	
 	public void initPid(double[] gyro,double[] wheels){
 		pidAng=new PIDLoop(gyro[0],gyro[1],gyro[2]);
 		pidWheel=new PIDLoop(wheels[0],wheels[1],wheels[2]);
+	}
+	
+	public void freeEncoders(){
+		for(int i=0;i<4;i++){
+			encoders[i]=null;
+		}
+	}
+	
+	public void initEncoders(){
+		if(freed){	
+			int firstPort=0;
+			int lastPort=0;
+			for(int i=0;i<4;i++){
+				firstPort=i*2;
+				lastPort=firstPort+1;
+				encoders[i]=new Encoder(encoderPorts[firstPort],encoderPorts[lastPort]);
+				encoders[i].reset();
+			}
+		}
+		freed=false;
 	}
 	
 	
@@ -76,6 +98,22 @@ public class DriveTrain extends SubSystem{
 		gyro.IMUA.zeroYaw();
 	}
 	
+	public double getEncoderDistance(int id){
+		return encoders[id].get()*ticksToInches;
+	}
+	
+	public double getEncoderAverage(){
+		double total=0;
+		for(int i=2;i<4;i++){
+			int neg=(i%2!=0)?-1:1;
+			if(i!=1){
+				total+=neg*getEncoderDistance(i);
+			}
+		}
+		double mean=total/3;
+		return mean;
+	}
+	
 	public void setHeading(double[] vector){
 		commandVector=vector;
 		//System.out.println("Powers "+commandVector[0]+" "+commandVector[1]+" "+commandVector[2]);
@@ -85,13 +123,14 @@ public class DriveTrain extends SubSystem{
 		double[] vectorOut = {0,0,0};
 		double angCurr = gyro.IMUA.getYaw();
 		double angOut = pidAng.correct(angTar, angCurr);
-		System.out.println(angOut);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
 		vectorOut[2]=angOut;
 		setHeading(vectorOut);
 	}
 	
+	//public void checkDistance
+
 	public void setTurbo(boolean in){
 		turbo=in;
 	}
@@ -159,6 +198,10 @@ public class DriveTrain extends SubSystem{
 		switch(getState()){
 			case states.DISABLED:
 				//System.out.println("DriveTrain is disabled.");
+				/*if(!freed){
+					freeEncoders();
+					freed=true;
+				}*/
 				commandVector[0]=0;
 				commandVector[1]=0;
 				commandVector[2]=0;
@@ -168,8 +211,10 @@ public class DriveTrain extends SubSystem{
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
 				commandVector[0] = rotated[0];
 				commandVector[1] = rotated[1];
+				//System.out.println(getEncoderAverage());
 			break;
 			case states.ROBOT_CENTRIC:
+				System.out.println(getEncoderAverage());
 			break;
 			case states.FIELD_CENTRIC_W_GYRO_HOLD:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
@@ -187,11 +232,17 @@ public class DriveTrain extends SubSystem{
 			case states.RESET_FIELD_REF:
 				gyro.IMUA.zeroYaw();
 				yawTarget=0;
+				for(int i=0;i<4;i++){
+					encoders[i].reset();
+				}
 			break;
-			case states.FIELD_CENTRIC_SLOW_SPIN_UP:
+			case states.FIELD_CENTRIC_WHEEL_CORRECT:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
 				commandVector[0] = rotated[0];
 				commandVector[1] = rotated[1];
+			break;
+			case states.PRINT_FROM_ENCODERS:
+				System.out.println(getEncoderDistance(3));
 			break;
 		}
 		setMotors();
