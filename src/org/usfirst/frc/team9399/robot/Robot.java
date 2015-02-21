@@ -2,6 +2,9 @@ package org.usfirst.frc.team9399.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj.command.CommandGroup;
+import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 import org.usfirst.frc.team9399.programs.*;
 import org.usfirst.frc.team9399.systems.*;
@@ -20,12 +23,19 @@ public class Robot extends IterativeRobot {
 	Toggler turbo=new Toggler();
 	Toggler roboCent=new Toggler();
 	SendableChooser autonChooser=new SendableChooser();
+	Scheduler sch;
+	PowerDistributionPanel pdp;
 	FileLogger captainsLog = new FileLogger("/home/lvuser/logs/"); //Intstantiate's Justin's file logger. 
 																//all console outputs will be saved to a log.
+	
 	public void robotInit() {
 		ss = SuperSystem.getInstance();
 		autonChooser.addObject("Drive Straight",new DriveStraightTest());
-	
+		autonChooser.addObject("Grab SRC from step",new GrabSRCAuton());
+		SmartDashboard.putData("Choose Auton",autonChooser);
+		sch=Scheduler.getInstance();
+		pdp = new PowerDistributionPanel();
+		pdp.clearStickyFaults();
     }
 	
 	public void testInit() {
@@ -39,17 +49,25 @@ public class Robot extends IterativeRobot {
 
 	
 	public void autonomousInit() {
-		ss.drivetrain.setState(driveState);
+		CommandGroup curr=(CommandGroup) autonChooser.getSelected();
+		sch.add(curr);
+		ss.drivetrain.run();
+		ss.drivetrain.setState(DriveTrain.states.ROBOT_CENTRIC);
+		ss.wingeyBits.setState(Wings.states.ENABLED);
 	}
 
     public void autonomousPeriodic(){
-
+    		sch.run();
+    		ss.drivetrain.run();
+    		ss.wingeyBits.run();
     }
 
     public void teleopInit() {
     	ss.drivetrain.setState(driveState);
-    	ss.wingeyBits.setState(Wings.states.MANUAL);
-    	//ss.compressor.setState(Pneumatics.states.ENABLED);
+    	ss.wingeyBits.setState(Wings.states.ENABLED);
+    	ss.sucker.setState(Intake.states.ACTIVE);
+    	ss.funkyClips.setState(Lifter.states.ENABLED);
+    	ss.compressor.setState(Pneumatics.states.ENABLED);
     }
    
     public void teleopPeriodic(){
@@ -66,22 +84,16 @@ public class Robot extends IterativeRobot {
     		driveState=DriveTrain.states.TANK_DRIVE;
     		heading = ss.control.getHeadingTank();
     	}else{
-    		if(roboCent.get()){
-    			driveState=DriveTrain.states.ROBOT_CENTRIC;
-    		}else{
+    		//if(roboCent.get()){
+    			//driveState=DriveTrain.states.ROBOT_CENTRIC;
+    		//}else{
         		driveState=mode;    			
-    		}
+    		//}
     		heading=ss.control.getHeading();
     	}
     	
-    	ss.sucker.setState(Intake.states.ACTIVE);
-    	ss.funkyClips.setState(Lifter.states.ACTIVE);
     	
-    	if(turbo.get()){
-    		ss.drivetrain.setTurbo(true);
-    	}else{
-    		ss.drivetrain.setTurbo(false);
-    	}
+    	ss.drivetrain.setTurbo(!turbo.get());
     	
     	//System.out.println(heading[0]+ " "+heading[1]);
     	padButtons=ss.toggleControls();
@@ -96,14 +108,14 @@ public class Robot extends IterativeRobot {
     	//ss.wingeyBits.setState(Wings.wings.LEFT,padButtons[0]?0:1);
     	//ss.wingeyBits.setState(Wings.wings.RIGHT,padButtons[1]?0:1);
     	ss.funkyClips.actuateClaw(padButtons[2]);
-    	//ss.wingeyBits.actuateHook(Wings.wings.LEFT,padButtons[3]);
-    	//ss.wingeyBits.actuateHook(Wings.wings.RIGHT,padButtons[4]);
+    	ss.wingeyBits.actuateHook(Wings.wings.LEFT,padButtons[3]);
+    	ss.wingeyBits.actuateHook(Wings.wings.RIGHT,padButtons[4]);
     	ss.drivetrain.setHeading(heading);
-    	ss.sucker.setWheels(ss.control.getOpPadLeft()[Config.KeyMap.INTAKE_AXIS]);
+    	ss.sucker.setWheels(ss.control.getOpPadCross());
     	ss.funkyClips.setSpeed(-ss.control.getOpPadRight()[Config.KeyMap.LIFTER_AXIS]);
     	ss.drivetrain.run();
     	ss.sucker.run();
-    	//ss.compressor.run();
+    	ss.compressor.run();
     	ss.wingeyBits.run();
     	ss.funkyClips.run();
     	if(ss.control.isResetPressed() ){ // Reset the gyroscope when both triggers are pressed.
@@ -118,10 +130,12 @@ public class Robot extends IterativeRobot {
     	ss.sucker.setState(Intake.states.DISABLED);
     	ss.funkyClips.setState(Lifter.states.DISABLED);
     	ss.wingeyBits.setState(Wings.states.DISABLED);
-    	//ss.compressor.setState(Pneumatics.states.DISABLED);
+    	ss.disable();
+    	ss.compressor.setState(Pneumatics.states.DISABLED);
     }
     
     public void disabledPeriodic(){
     	ss.drivetrain.run();
+    	ss.wingeyBits.run();
     }
 }

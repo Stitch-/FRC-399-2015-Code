@@ -13,13 +13,13 @@ public class Pneumatics extends SubSystem {
 		compressor = new Compressor(comp);
 	}
 	
-	public boolean isCompressing(){
-		return compressor.getPressureSwitchValue();
-	}
-	
 	public class states{
 		public static final int DISABLED=0;
 		public static final int ENABLED=1;
+	}
+	
+	public boolean isCompressing(){
+		return compressor.getPressureSwitchValue();
 	}
 	
 	public void run(){

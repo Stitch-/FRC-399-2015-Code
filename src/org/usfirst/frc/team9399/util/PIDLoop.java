@@ -21,9 +21,6 @@ public class PIDLoop {
 		this.p=p;
 		this.i=i;
 		this.d=d;
-		SmartDashboard.putNumber("P", p);
-		SmartDashboard.putNumber("I", i);
-		SmartDashboard.putNumber("D", d);
 	}
 	
 	
@@ -69,9 +66,7 @@ public class PIDLoop {
 		this.targ=targ;
 		this.curr=curr;
 		tick(targ-curr);
-		
-		SmartDashboard.putNumber("TARG", targ);
-		SmartDashboard.putNumber("CURR", curr);
+
 		return out;
 	}
 	

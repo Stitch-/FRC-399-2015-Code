@@ -7,15 +7,12 @@ import org.usfirst.frc.team9399.util.SubSystem;
 public class Intake extends SubSystem{
 	VictorSP left,right;
 	double speed=0.0;
-	double band=0.1;
+	double speedMult;
 	
-	public Intake(int leftPort,int rightPort){
-		left=new VictorSP(leftPort);
-		right=new VictorSP(rightPort);
-	}
-	
-	public void setWheels(double powa){
-		speed=powa;
+	public Intake(int[] ports,double speed){
+		left=new VictorSP(ports[0]);
+		right=new VictorSP(ports[1]);
+		speedMult=speed;
 	}
 	
 	public class states{
@@ -23,16 +20,15 @@ public class Intake extends SubSystem{
 		public static final int ACTIVE=1;
 	}
 	
+	public void setWheels(double powa){
+		speed=powa*speedMult;
+	}
+	
 	public void run(){
 		switch(this.state){
 			case states.ACTIVE:
-				if(speed<=-band||speed>=band){
-					left.set(-speed);
-					right.set(speed);
-				}else{
-					left.set(0);
-					right.set(0);
-				}
+				left.set(-speed);
+				right.set(speed);
 			break;
 			case states.DISABLED:
 				left.set(0);

@@ -6,7 +6,7 @@ import org.usfirst.frc.team9399.util.Toggler;
 public class SuperSystem {
 	public Controls control;
 	public DriveTrain drivetrain;
-	//public Pneumatics compressor;
+	public Pneumatics compressor;
 	public Wings wingeyBits;
 	public Lifter funkyClips;
 	public Intake sucker;
@@ -21,26 +21,25 @@ public class SuperSystem {
 	}
 	
 	private SuperSystem(){
-		control = new Controls(Config.Controls.JOY_LEFT,Config.Controls.JOY_RIGHT,Config.Controls.OPERATOR_PAD,
-				Config.Controls.DEADBAND);
+		control = new Controls(Config.Controls.CONTROL_PORTS,Config.Controls.DEADBAND);
 		
-		drivetrain = new DriveTrain(Config.DriveTrain.PORTS,Config.DriveTrain.ENC_PORTS,Config.DriveTrain.TICKS_TO_INCHES);
+		drivetrain = new DriveTrain(Config.DriveTrain.MOTOR_PORTS,Config.DriveTrain.ENC_PORTS,Config.DriveTrain.TICKS_TO_INCHES);
 		drivetrain.setState(DriveTrain.states.DISABLED);
 		drivetrain.initPid(Config.DriveTrain.GYRO_PID,Config.DriveTrain.WHEEL_PID);
 		
-		//compressor=new Pneumatics(Config.Pneumatics.COMP_ID);
+		compressor=new Pneumatics(Config.Pneumatics.COMP_ID);
 		
-		wingeyBits=new Wings(Config.Wings.LEFT_MOTOR,Config.Wings.RIGHT_MOTOR,Config.Wings.LEFT_SOL,Config.Wings.RIGHT_SOL,
-				Config.Wings.SWITCH_THRESHOLD,Config.Pneumatics.COMP_ID,Config.Wings.MOTOR_SPEED,Config.Wings.BUTTON_PORTS);
-		wingeyBits.setState(Wings.wingStates.RETRACTED);
+		wingeyBits=new Wings(Config.Wings.MOTOR_PORTS,Config.Wings.SOL_PORTS,
+				Config.Wings.SWITCH_THRESHOLD,Config.Pneumatics.COMP_ID,
+				Config.Wings.MOTOR_SPEED,Config.Wings.BUTTON_PORTS);
 		
-		funkyClips=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORTS,Config.Lifter.ENCODER_PORTS,
+		funkyClips=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORT,Config.Lifter.ENCODER_PORTS,
 				Config.Lifter.LEAD_SCREW_CONSTANT,Config.Lifter.ENCODER_TURNS,Config.Lifter.MAX_HEIGHT,
 				Config.Lifter.LIMIT_SWITCH_PORTS,Config.Lifter.SWITCH_THRESHOLD,Config.Lifter.DEADBAND,
 				Config.Lifter.PDP_TERMINALS,Config.Lifter.PID); 
 		funkyClips.setState(Lifter.states.DISABLED);
 		
-		sucker=new Intake(Config.Intake.leftPort,Config.Intake.rightPort);
+		sucker=new Intake(Config.Intake.MOTOR_PORTS,Config.Intake.SPEED_MULT);
 		
 		for(int i=0;i<5;i++){
 			t[i]=new Toggler();
@@ -63,5 +62,9 @@ public class SuperSystem {
 		return out;
 	}
 	
-	
+	public void disable(){
+		if(t[2].get()){
+			t[2].set(true);
+		}
+	}
 }

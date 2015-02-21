@@ -8,17 +8,23 @@ public class Controls /*extends SubSystem*/{
 	final int resetButton = 1;
 	double band;
 	
-	public Controls(int leftPort, int rightPort,int opPort,double deadband){
-		left=new Joystick(leftPort);
-		right=new Joystick(rightPort);
-		op=new Joystick(opPort);
+	public class pads{
+		public static final int LEFT=0;
+		public static final int RIGHT=1;
+		public static final int OP=2;
+	}
+	
+	public Controls(int[] ports,double deadband){
+		left=new Joystick(ports[0]);
+		right=new Joystick(ports[1]);
+		op=new Joystick(ports[2]);
 		band = deadband;
 	}
 	
 	public double[] getHeading(){
 		double x=left.getRawAxis(0);
 		double y=left.getRawAxis(1);
-		double z=right.getRawAxis(2)*0.2;
+		double z=right.getRawAxis(2)*0.1;
 		double[] heading = {x,-y,z};
 		for(int i=0;i<2;i++){
 			heading[i]=deadBand(heading[i]);
@@ -57,11 +63,19 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
-	public class pads{
-		public static final int LEFT=0;
-		public static final int RIGHT=1;
-		public static final int OP=2;
+	public double getOpPadCross(){
+		int pov=op.getPOV();
+		double out=0;
+		if(pov!=-1){
+			if(pov==0){
+				out=1;
+			}else if(pov==180){
+				out=-1;
+			}
+		}
+		return out;
 	}
+	
 	
 	public boolean getButton(int c, int button){
 		boolean out;

@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 public class Lifter extends SubSystem {
 	VictorSP[] motors=new VictorSP[2];
-	Solenoid[] sols = new Solenoid[2];
+	Solenoid sol;
 	Encoder coder;
 	AnalogInput lowerSwitch1,lowerSwitch2;
 	double leadScrewConstant,maxHeight,minHeight,deadband,startingAmp;
@@ -19,20 +19,16 @@ public class Lifter extends SubSystem {
 	int threshold,c1,c2,turns;
 	PowerDistributionPanel pdp;
 	PIDLoop pidLoop;
-	public Lifter(int[] motorPorts,int[] solPorts,int[] encoderPorts,double constant,int turn,double max,
+	public Lifter(int[] motorPorts,int solPort,int[] encoderPorts,double constant,int turn,double max,
 			int[] switchPorts,int threshold,double band,int[] terminals,double[] pidVals){
 		for(int i=0;i<2;i++){
 			motors[i]=new VictorSP(motorPorts[i]);
-			if(i==0){
-				sols[i]=new Solenoid(solPorts[i]);
-				sols[i].set(false);
-			}
 		}
+		sol=new Solenoid(solPort);
+		sol.set(false);
 		pdp=new PowerDistributionPanel();
 		lowerSwitch1 = new AnalogInput(switchPorts[0]);
 		lowerSwitch2 = new AnalogInput(switchPorts[1]);
-		//coder=new Encoder(encoderPorts[0],encoderPorts[1],false);
-		//coder.reset(); //Lifter should be placed in lowest possible positions when starting.
 		leadScrewConstant=constant;
 		turns=turn;
 		maxHeight=max;
@@ -43,11 +39,13 @@ public class Lifter extends SubSystem {
 		c2=terminals[1];
 		pidLoop=new PIDLoop(pidVals[0],pidVals[1],pidVals[2]);
 		startingAmp=getAmperage();
+		//coder=new Encoder(encoderPorts[0],encoderPorts[1],false);
+		//coder.reset(); //Lifter should be placed in lowest possible positions when starting.
 	}
 	
 	public class states{
 		public static final int DISABLED=0;
-		public static final int ACTIVE=1;
+		public static final int ENABLED=1;
 	}
 	
 	/*public double getLeadScrewDistance(){
@@ -62,7 +60,7 @@ public class Lifter extends SubSystem {
 	}
 	
 	public void actuateClaw(boolean open){
-		sols[0].set(open);
+		sol.set(open);
 	}
 	
 	private void runMotors(){
@@ -107,7 +105,7 @@ public class Lifter extends SubSystem {
 	
 	public void run(){
 		switch(state){
-			case states.ACTIVE:
+			case states.ENABLED:
 				runMotors();
 			break;
 			

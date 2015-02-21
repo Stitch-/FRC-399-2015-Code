@@ -23,6 +23,7 @@ public class DriveTrain extends SubSystem{
 	boolean turbo=false;
 	final boolean pidOnWheels=false;
 	double ticksToInches;
+	double angOut;
 	
 	final double cWidth=25; //inches
 	final double cLength=28.5;
@@ -122,7 +123,7 @@ public class DriveTrain extends SubSystem{
 	public void setHeadingAng(double[] vector, double angTar){
 		double[] vectorOut = {0,0,0};
 		double angCurr = gyro.IMUA.getYaw();
-		double angOut = pidAng.correct(angTar, angCurr);
+		angOut = pidAng.correct(angTar, angCurr);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
 		vectorOut[2]=angOut;
@@ -133,6 +134,14 @@ public class DriveTrain extends SubSystem{
 
 	public void setTurbo(boolean in){
 		turbo=in;
+	}
+	
+	public void setYawTarget(double in){
+		yawTarget=in;
+	}
+	
+	public double getPidVal(){
+		return angOut;
 	}
 	
 	protected void setMotors(){
@@ -182,6 +191,7 @@ public class DriveTrain extends SubSystem{
 	{
 		double[] rotated = new double[2];
 		double yaw = Math.toRadians(gyro.IMUA.getYaw());
+		System.out.println(yaw);
 		double sin = Math.sin(yaw);
 		double cos = Math.cos(yaw);
 		
@@ -202,6 +212,9 @@ public class DriveTrain extends SubSystem{
 					freeEncoders();
 					freed=true;
 				}*/
+				for(int i=0;i<4;i++){
+					encoders[i].reset();
+				}
 				commandVector[0]=0;
 				commandVector[1]=0;
 				commandVector[2]=0;
@@ -214,7 +227,7 @@ public class DriveTrain extends SubSystem{
 				//System.out.println(getEncoderAverage());
 			break;
 			case states.ROBOT_CENTRIC:
-				System.out.println(getEncoderAverage());
+				//System.out.println(getEncoderAverage());
 			break;
 			case states.FIELD_CENTRIC_W_GYRO_HOLD:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
