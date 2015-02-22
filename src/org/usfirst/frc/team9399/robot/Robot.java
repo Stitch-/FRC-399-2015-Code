@@ -32,6 +32,9 @@ public class Robot extends IterativeRobot {
 		ss = SuperSystem.getInstance();
 		autonChooser.addObject("Drive Straight",new DriveStraightTest());
 		autonChooser.addObject("Grab SRC from step",new GrabSRCAuton());
+		autonChooser.addObject("Grab left SRC",new GrabSRCLeft());
+		autonChooser.addObject("Grab right SRC",new GrabSRCRight());
+		autonChooser.addObject("Stack Yellow Totes",new StackYellowTotes());
 		SmartDashboard.putData("Choose Auton",autonChooser);
 		sch=Scheduler.getInstance();
 		pdp = new PowerDistributionPanel();
@@ -54,12 +57,14 @@ public class Robot extends IterativeRobot {
 		ss.drivetrain.run();
 		ss.drivetrain.setState(DriveTrain.states.ROBOT_CENTRIC);
 		ss.wingeyBits.setState(Wings.states.ENABLED);
+		ss.funkyClips.setState(Lifter.states.ENABLED);
 	}
 
     public void autonomousPeriodic(){
     		sch.run();
     		ss.drivetrain.run();
     		ss.wingeyBits.run();
+    		ss.funkyClips.run();
     }
 
     public void teleopInit() {

@@ -21,7 +21,7 @@ public class Intake extends SubSystem{
 	}
 	
 	public void setWheels(double powa){
-		speed=powa*speedMult;
+		speed=-powa*speedMult;
 	}
 	
 	public void run(){

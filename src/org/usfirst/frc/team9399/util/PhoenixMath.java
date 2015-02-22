@@ -1,5 +1,7 @@
 package org.usfirst.frc.team9399.util;
 
+import java.math.BigDecimal;
+
 public abstract class PhoenixMath {
 	
 	/**
@@ -89,6 +91,19 @@ public abstract class PhoenixMath {
 		return val;
 	}
 	
+	
+	/**
+	 * Compares double with greater precision
+	 * @param last
+	 * @param curr
+	 * @return
+	 */
+	public static boolean checkDouble(double last,double curr){
+		BigDecimal bLast=new BigDecimal(last);
+		BigDecimal bCurr=new BigDecimal(curr);
+		boolean out = bLast.compareTo(bCurr)==0;
+		return out;
+	}
 	
 	
 }

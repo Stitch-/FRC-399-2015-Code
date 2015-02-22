@@ -19,6 +19,8 @@ public class Lifter extends SubSystem {
 	int threshold,c1,c2,turns;
 	PowerDistributionPanel pdp;
 	PIDLoop pidLoop;
+	boolean isSwitchClosed=false;
+	
 	public Lifter(int[] motorPorts,int solPort,int[] encoderPorts,double constant,int turn,double max,
 			int[] switchPorts,int threshold,double band,int[] terminals,double[] pidVals){
 		for(int i=0;i<2;i++){
@@ -63,6 +65,10 @@ public class Lifter extends SubSystem {
 		sol.set(open);
 	}
 	
+	public boolean getSwitch(){
+		return isSwitchClosed;
+	}
+	
 	private void runMotors(){
 		boolean s1=lowerSwitch1.getValue() < threshold;
 		boolean s2=lowerSwitch2.getValue() < threshold;
@@ -74,6 +80,7 @@ public class Lifter extends SubSystem {
 		{
 			motorSpeed = 0;
 		}
+		isSwitchClosed=lowerVal;
 		
 		setMotors(motorSpeed);
 		/*double distance=getLeadScrewDistance();
@@ -96,6 +103,7 @@ public class Lifter extends SubSystem {
 		double out=Math.max(a1, a2);
 		return out;
 	}
+	
 	
 	private void setMotors(double speed){
 		for(int i=0;i<2;i++){

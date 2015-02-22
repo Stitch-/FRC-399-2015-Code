@@ -9,6 +9,7 @@ public abstract class Config {
 		public static final double[] GYRO_PID={0.01,0.0001,0};
 		public static final double[] WHEEL_PID={0,0,0};
 		
+		public static final int GYRO_FAIL_THRESHOLD=50;
 		public static final double TICKS_TO_INCHES = 0.0209439;
 		/*public static final int FRONT_RIGHT=1;
 		public static final int FRONT_LEFT=6;
@@ -66,7 +67,7 @@ public abstract class Config {
 	public static class Lifter{
 		public static final double LEAD_SCREW_CONSTANT=0.15; //inches from the top of on thread to the top of the thread below it
 		public static final int[] MOTOR_PORTS={2,7};
-		public static final int[] LIMIT_SWITCH_PORTS={0,1};
+		public static final int[] LIMIT_SWITCH_PORTS={0,4};
 		public static final int SOL_PORT=2;
 		public static final int[] ENCODER_PORTS={2,0};
 		public static final int ENCODER_TURNS=100;

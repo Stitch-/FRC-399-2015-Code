@@ -1,22 +1,25 @@
 package org.usfirst.frc.team9399.systems;
 
+
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Gyro;
 
 import org.usfirst.frc.team9399.util.PIDLoop;
 import org.usfirst.frc.team9399.util.SubSystem;
+import org.usfirst.frc.team9399.util.PhoenixMath;
 
 public class DriveTrain extends SubSystem{
 	public static final double nonTurboMax=0.4; //max speed w/out turbo
-	
+	public static final double checkPrecision=10000E20;
+
 	VictorSP[] motors=new VictorSP[4];
 	Encoder[] encoders=new Encoder[4];
 	IMU gyro = IMU.getInstance();
 	double[] commandVector = {0,0,0}; //x,y,rotation
 	double[] powers = new double[4];
 	int[] encoderPorts = new int[8];
-	int orbitRotation = 0;
 	boolean freed=true;
 	PIDLoop pidAng;
 	PIDLoop pidWheel;
@@ -24,6 +27,11 @@ public class DriveTrain extends SubSystem{
 	final boolean pidOnWheels=false;
 	double ticksToInches;
 	double angOut;
+	int failStreak=0;
+	int failThreshold;
+	Gyro gyroAux;
+	double lastYaw=0;
+	boolean hasFailed=false;
 	
 	final double cWidth=25; //inches
 	final double cLength=28.5;
@@ -41,7 +49,7 @@ public class DriveTrain extends SubSystem{
 	};
 	
 	//fl.fr.bl.br
-	public DriveTrain(int[] ports, int[] encoderPorts,double ticks){
+	public DriveTrain(int[] ports, int[] encoderPorts,double ticks,int fails){
 		this.encoderPorts=encoderPorts;
 		initEncoders();
 		for(int i=0;i<4;i++){
@@ -49,6 +57,9 @@ public class DriveTrain extends SubSystem{
 		}
 		calibrateGyro();
 		ticksToInches=ticks;
+		gyro=IMU.getInstance(); 
+		gyroAux=new Gyro(1);
+		failThreshold=fails;
 	}
 	
 	
@@ -97,6 +108,7 @@ public class DriveTrain extends SubSystem{
 			Timer.delay(0.1);
 		}
 		gyro.IMUA.zeroYaw();
+		if(gyroAux!=null)gyroAux.reset();
 	}
 	
 	public double getEncoderDistance(int id){
@@ -122,7 +134,7 @@ public class DriveTrain extends SubSystem{
 	
 	public void setHeadingAng(double[] vector, double angTar){
 		double[] vectorOut = {0,0,0};
-		double angCurr = gyro.IMUA.getYaw();
+		double angCurr = /*gyro.getAngle();*/gyro.IMUA.getYaw();
 		angOut = pidAng.correct(angTar, angCurr);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
@@ -144,7 +156,8 @@ public class DriveTrain extends SubSystem{
 		return angOut;
 	}
 	
-	protected void setMotors(){
+	
+	private void setMotors(){
 		double max=1;
 		
 		if(!turbo){
@@ -186,15 +199,45 @@ public class DriveTrain extends SubSystem{
 		
 	}
 	
-	
+
 	private double[] fieldCentricRotate(double x, double y)
 	{
 		double[] rotated = new double[2];
-		double yaw = Math.toRadians(gyro.IMUA.getYaw());
-		System.out.println(yaw);
+		double yaw=0;
+		if(!hasFailed){
+			yaw = Math.toRadians(gyro.IMUA.getYaw());
+		}else{
+			double ang=gyroAux.getAngle();
+			if (Math.abs(ang)
+                    > 180) {
+                if (ang > 0) {
+                    ang -= 360;
+                } else {
+                   ang += 360;
+                }
+            }
+			yaw=Math.toRadians(ang);
+		}
+		
+		boolean isEqual=PhoenixMath.checkDouble(lastYaw,yaw);
+		
+		if(!hasFailed && isEqual){
+			failStreak++;
+			System.out.println("Fail detected: Streak:"+failStreak);
+		}else{
+			failStreak=0;
+		}
+		
+		if(failStreak == failThreshold){
+			
+			System.out.println("Gyro has failed! Switching to auxilliary!");
+			hasFailed=true;
+		}
+		//System.out.println(lastYaw);
+		//System.out.println(yaw);
 		double sin = Math.sin(yaw);
 		double cos = Math.cos(yaw);
-		
+		lastYaw=yaw;
 		rotated[0] = x * cos - y * sin;
 		rotated[1] = x * sin + y * cos;
 		return rotated;
@@ -244,6 +287,7 @@ public class DriveTrain extends SubSystem{
 			break;
 			case states.RESET_FIELD_REF:
 				gyro.IMUA.zeroYaw();
+				gyroAux.reset();
 				yawTarget=0;
 				for(int i=0;i<4;i++){
 					encoders[i].reset();

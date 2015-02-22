@@ -23,7 +23,8 @@ public class SuperSystem {
 	private SuperSystem(){
 		control = new Controls(Config.Controls.CONTROL_PORTS,Config.Controls.DEADBAND);
 		
-		drivetrain = new DriveTrain(Config.DriveTrain.MOTOR_PORTS,Config.DriveTrain.ENC_PORTS,Config.DriveTrain.TICKS_TO_INCHES);
+		drivetrain = new DriveTrain(Config.DriveTrain.MOTOR_PORTS,Config.DriveTrain.ENC_PORTS,
+				Config.DriveTrain.TICKS_TO_INCHES,Config.DriveTrain.GYRO_FAIL_THRESHOLD);
 		drivetrain.setState(DriveTrain.states.DISABLED);
 		drivetrain.initPid(Config.DriveTrain.GYRO_PID,Config.DriveTrain.WHEEL_PID);
 		
@@ -40,7 +41,6 @@ public class SuperSystem {
 		funkyClips.setState(Lifter.states.DISABLED);
 		
 		sucker=new Intake(Config.Intake.MOTOR_PORTS,Config.Intake.SPEED_MULT);
-		
 		for(int i=0;i<5;i++){
 			t[i]=new Toggler();
 		}
