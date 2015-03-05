@@ -25,16 +25,20 @@ public class Robot extends IterativeRobot {
 	SendableChooser autonChooser=new SendableChooser();
 	Scheduler sch;
 	PowerDistributionPanel pdp;
-	FileLogger captainsLog = new FileLogger("/home/lvuser/logs/"); //Intstantiate's Justin's file logger. 
+	String modeInd="";
+	//FileLogger captainsLog = new FileLogger("/home/lvuser/logs/"); //Intstantiate's Justin's file logger. 
 																//all console outputs will be saved to a log.
 	
 	public void robotInit() {
 		ss = SuperSystem.getInstance();
+		autonChooser.addObject("Grab SRC and drive back straight",new GrabSRCDriveBackStraight());
 		autonChooser.addObject("Drive Straight",new DriveStraightTest());
 		autonChooser.addObject("Grab SRC from step",new GrabSRCAuton());
 		autonChooser.addObject("Grab left SRC",new GrabSRCLeft());
 		autonChooser.addObject("Grab right SRC",new GrabSRCRight());
-		autonChooser.addObject("Stack Yellow Totes",new StackYellowTotes());
+		//autonChooser.addObject("Stack Yellow Totes",new StackYellowTotes());
+		//autonChooser.addObject("Grab RCs",new GrabRCS());
+		autonChooser.addObject("Do Nothing", new DoNothing());
 		SmartDashboard.putData("Choose Auton",autonChooser);
 		sch=Scheduler.getInstance();
 		pdp = new PowerDistributionPanel();
@@ -58,13 +62,23 @@ public class Robot extends IterativeRobot {
 		ss.drivetrain.setState(DriveTrain.states.ROBOT_CENTRIC);
 		ss.wingeyBits.setState(Wings.states.ENABLED);
 		ss.funkyClips.setState(Lifter.states.ENABLED);
+		ss.compressor.setState(Pneumatics.states.ENABLED);
 	}
 
     public void autonomousPeriodic(){
-    		sch.run();
-    		ss.drivetrain.run();
-    		ss.wingeyBits.run();
-    		ss.funkyClips.run();
+    	sch.run();
+    	ss.drivetrain.run();
+    	ss.wingeyBits.run();
+    	ss.funkyClips.run();
+    	ss.compressor.run();
+    }
+    
+    public void practiceInit(){
+    	ss.compressor.setState(Pneumatics.states.ENABLED);
+    }
+    
+    public void practicePeriodic(){
+    	ss.compressor.run();
     }
 
     public void teleopInit() {
@@ -88,16 +102,18 @@ public class Robot extends IterativeRobot {
     	if(tankDrive.get()){
     		driveState=DriveTrain.states.TANK_DRIVE;
     		heading = ss.control.getHeadingTank();
+    		modeInd="Tank";
     	}else{
     		//if(roboCent.get()){
     			//driveState=DriveTrain.states.ROBOT_CENTRIC;
     		//}else{
         		driveState=mode;    			
     		//}
+        	modeInd="Field Centric";
     		heading=ss.control.getHeading();
     	}
     	
-    	
+    	SmartDashboard.putString("",modeInd);
     	ss.drivetrain.setTurbo(!turbo.get());
     	
     	//System.out.println(heading[0]+ " "+heading[1]);

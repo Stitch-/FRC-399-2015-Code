@@ -11,6 +11,7 @@ public class GrabSRCAuton extends CommandGroup {
 		boolean[] talonExtend={true,true};
 		boolean[] wingCommand={true,false,false,true};
 		boolean[] wingRetract={false,true,false,true};
+		addSequential(new SetStartingAngle(180));
 		addParallel(new SetTalons(1,talonExtend));
 		addSequential(new SetWings(1,wingCommand));
 		addSequential(new SetTalons(0.2,talonRetract));

@@ -21,7 +21,7 @@ public class ResetLifter extends Command {
 	
 	protected void initialize() {
 		System.out.println("Reseting lifter to lowest position");
-		ss.funkyClips.setSpeed(Math.abs(speed));
+		ss.funkyClips.setSpeed(-Math.abs(speed));
 	}
 	
 	protected void execute() {
@@ -37,7 +37,7 @@ public class ResetLifter extends Command {
 	}
 	
 	protected boolean isFinished() {	
-		return this.isTimedOut()||!ss.funkyClips.getSwitch();
+		return this.isTimedOut()||ss.funkyClips.getSwitch();
 	}
 }
 

@@ -36,11 +36,11 @@ public abstract class Config {
 	}
 	
 	public class KeyMap{ //keymap for op pad.
-		public static final int TOGGLE_LEFT_WING=1;
+		public static final int TOGGLE_LEFT_WING=4;
 		public static final int TOGGLE_RIGHT_WING=3;
 		public static final int TOGGLE_CLAW=2;
-		public static final int TOGGLE_RIGHT_CLAW=4;
-		public static final int TOGGLE_LEFT_CLAW=3;
+		public static final int TOGGLE_RIGHT_CLAW=3;
+		public static final int TOGGLE_LEFT_CLAW=1;
 		public static final int INTAKE_AXIS=1;
 		public static final int LIFTER_AXIS=1;
 	}
@@ -67,12 +67,12 @@ public abstract class Config {
 	public static class Lifter{
 		public static final double LEAD_SCREW_CONSTANT=0.15; //inches from the top of on thread to the top of the thread below it
 		public static final int[] MOTOR_PORTS={2,7};
-		public static final int[] LIMIT_SWITCH_PORTS={0,4};
+		public static final int[] LIMIT_SWITCH_PORTS={3,2,0};
 		public static final int SOL_PORT=2;
 		public static final int[] ENCODER_PORTS={2,0};
 		public static final int ENCODER_TURNS=100;
 		public static final int MAX_HEIGHT=12; //inches
-		public static final int SWITCH_THRESHOLD=100;
+		public static final int SWITCH_THRESHOLD=200;
 		public static final double DEADBAND=0.05;
 		public static final int[] PDP_TERMINALS={2,13};
 		public static final double[] PID={0,0,0};

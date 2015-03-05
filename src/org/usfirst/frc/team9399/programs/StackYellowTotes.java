@@ -8,8 +8,7 @@ public class StackYellowTotes extends CommandGroup {
 	public StackYellowTotes(){
 		addSequential(new ResetLifter(1));
 		addSequential(new SetLifter(1,1));
-		
-	}
 	
 	
+}
 }

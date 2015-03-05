@@ -13,7 +13,7 @@ public class Lifter extends SubSystem {
 	VictorSP[] motors=new VictorSP[2];
 	Solenoid sol;
 	Encoder coder;
-	AnalogInput lowerSwitch1,lowerSwitch2;
+	AnalogInput lowerSwitch1,lowerSwitch2, upperSwitch;
 	double leadScrewConstant,maxHeight,minHeight,deadband,startingAmp;
 	double speed=0;
 	int threshold,c1,c2,turns;
@@ -31,6 +31,7 @@ public class Lifter extends SubSystem {
 		pdp=new PowerDistributionPanel();
 		lowerSwitch1 = new AnalogInput(switchPorts[0]);
 		lowerSwitch2 = new AnalogInput(switchPorts[1]);
+		upperSwitch = new AnalogInput(switchPorts[2]);
 		leadScrewConstant=constant;
 		turns=turn;
 		maxHeight=max;
@@ -65,6 +66,11 @@ public class Lifter extends SubSystem {
 		sol.set(open);
 	}
 	
+	public boolean getClaw(){
+		boolean out=sol.get();
+		return out;
+	}
+	
 	public boolean getSwitch(){
 		return isSwitchClosed;
 	}
@@ -72,20 +78,25 @@ public class Lifter extends SubSystem {
 	private void runMotors(){
 		boolean s1=lowerSwitch1.getValue() < threshold;
 		boolean s2=lowerSwitch2.getValue() < threshold;
+		//System.out.println(s1+","+s2);
 		boolean bandVal = speed < deadband && speed > -deadband;
 		boolean lowerVal = s1 || s2;
-		adjustSpeed();
-		double motorSpeed = speed;;
-		if((lowerVal && speed < 0)||bandVal)
-		{
+		boolean upperVal = upperSwitch.getValue() < threshold;
+		//System.out.println(s1+","+s2+","+upperVal);
+		//adjustSpeed();
+		double motorSpeed = speed;
+		lowerVal = lowerVal && (speed < 0);
+		upperVal = upperVal && (speed > 0);
+		if(lowerVal||bandVal||upperVal) {
 			motorSpeed = 0;
 		}
-		isSwitchClosed=lowerVal;
+		//System.out.println(lowerVal+","+bandVal+","+upperVal);
+		isSwitchClosed=lowerVal||upperVal;
 		
 		setMotors(motorSpeed);
 		/*double distance=getLeadScrewDistance();
 		if(speed>0 && distance<maxHeight){
-			setMotors(speed);
+			setMotors(speed);q
 		}else if(speed<0 && distance>minHeight){
 			setMotors(speed);
 		}*/

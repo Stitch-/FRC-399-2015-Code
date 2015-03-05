@@ -13,7 +13,7 @@ import org.usfirst.frc.team9399.util.PhoenixMath;
 public class DriveTrain extends SubSystem{
 	public static final double nonTurboMax=0.4; //max speed w/out turbo
 	public static final double checkPrecision=10000E20;
-
+	double startingAng=0;
 	VictorSP[] motors=new VictorSP[4];
 	Encoder[] encoders=new Encoder[4];
 	IMU gyro = IMU.getInstance();
@@ -77,6 +77,12 @@ public class DriveTrain extends SubSystem{
 	public void initPid(double[] gyro,double[] wheels){
 		pidAng=new PIDLoop(gyro[0],gyro[1],gyro[2]);
 		pidWheel=new PIDLoop(wheels[0],wheels[1],wheels[2]);
+	}
+	
+	public void setStartingAng(double in){
+		gyro.IMUA.zeroYaw();
+		if(gyroAux!=null)gyroAux.reset();
+		startingAng=in;
 	}
 	
 	public void freeEncoders(){
@@ -205,11 +211,16 @@ public class DriveTrain extends SubSystem{
 		double[] rotated = new double[2];
 		double yaw=0;
 		if(!hasFailed){
-			yaw = Math.toRadians(gyro.IMUA.getYaw());
+			double degrees=gyro.IMUA.getYaw()+startingAng;
+			if(degrees>=360){
+				degrees-=360;
+			}else if(degrees<0){
+				degrees+=360;
+			}
+			yaw = Math.toRadians(degrees);
 		}else{
-			double ang=gyroAux.getAngle();
-			if (Math.abs(ang)
-                    > 180) {
+			double ang=gyroAux.getAngle()+startingAng;
+			if (Math.abs(ang) > 180) {
                 if (ang > 0) {
                     ang -= 360;
                 } else {
@@ -218,12 +229,13 @@ public class DriveTrain extends SubSystem{
             }
 			yaw=Math.toRadians(ang);
 		}
-		
+		System.out.println(gyro.IMUA.getYaw()+","+gyroAux.getAngle());
+				
 		boolean isEqual=PhoenixMath.checkDouble(lastYaw,yaw);
 		
 		if(!hasFailed && isEqual){
 			failStreak++;
-			System.out.println("Fail detected: Streak:"+failStreak);
+			System.out.println("Fail detected: Streak: "+failStreak);
 		}else{
 			failStreak=0;
 		}
