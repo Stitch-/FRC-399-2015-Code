@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 import org.usfirst.frc.team9399.util.PIDLoop;
 import org.usfirst.frc.team9399.util.SubSystem;
@@ -30,7 +31,7 @@ public class DriveTrain extends SubSystem{
 	int failStreak=0;
 	int failThreshold;
 	Gyro gyroAux;
-	double lastYaw=0;
+	double lastYaw,yawOut=0;
 	boolean hasFailed=false;
 	
 	final double cWidth=25; //inches
@@ -58,7 +59,7 @@ public class DriveTrain extends SubSystem{
 		calibrateGyro();
 		ticksToInches=ticks;
 		gyro=IMU.getInstance(); 
-		gyroAux=new Gyro(1);
+		gyroAux=new Gyro(0);
 		failThreshold=fails;
 	}
 	
@@ -83,6 +84,10 @@ public class DriveTrain extends SubSystem{
 		gyro.IMUA.zeroYaw();
 		if(gyroAux!=null)gyroAux.reset();
 		startingAng=in;
+	}
+	
+	public double getYaw(){
+		return yawOut;
 	}
 	
 	public void freeEncoders(){
@@ -129,7 +134,7 @@ public class DriveTrain extends SubSystem{
 				total+=neg*getEncoderDistance(i);
 			}
 		}
-		double mean=total/3;
+		double mean=total/4;
 		return mean;
 	}
 	
@@ -140,8 +145,8 @@ public class DriveTrain extends SubSystem{
 	
 	public void setHeadingAng(double[] vector, double angTar){
 		double[] vectorOut = {0,0,0};
-		double angCurr = /*gyro.getAngle();*/gyro.IMUA.getYaw();
-		angOut = pidAng.correct(angTar, angCurr);
+		//double angCurr = /*gyro.getAngle();*/gyro.IMUA.getYaw();
+		angOut = pidAng.correct(angTar, yawOut);// angCurr);
 		vectorOut[0]=vector[0];
 		vectorOut[1]=vector[1];
 		vectorOut[2]=angOut;
@@ -209,38 +214,49 @@ public class DriveTrain extends SubSystem{
 	private double[] fieldCentricRotate(double x, double y)
 	{
 		double[] rotated = new double[2];
+		String out;
 		double yaw=0;
 		if(!hasFailed){
-			double degrees=gyro.IMUA.getYaw()+startingAng;
-			if(degrees>=360){
-				degrees-=360;
-			}else if(degrees<0){
-				degrees+=360;
+			yaw=gyro.IMUA.getYaw()+startingAng;
+			if(yaw>=360){
+				yaw-=360;
+			}else if(yaw<0){
+				yaw+=360;
 			}
-			yaw = Math.toRadians(degrees);
+			out="Main";
 		}else{
-			double ang=gyroAux.getAngle()+startingAng;
-			if (Math.abs(ang) > 180) {
-                if (ang > 0) {
-                    ang -= 360;
+			yaw=gyroAux.getAngle()+startingAng;
+			/*if (Math.abs(yaw) > 180) {
+                if (yaw > 0) {
+                    yaw -= 360;
                 } else {
-                   ang += 360;
+                   yaw += 360;
                 }
-            }
-			yaw=Math.toRadians(ang);
+            }*/
+			while(yaw>=360){
+				yaw-=360;
+			}
+			while(yaw<0){
+				yaw+=360;
+			}
+			out="Aux";
+			System.out.print("(Aux)");
+			//System.out.println(ang);
 		}
-		System.out.println(gyro.IMUA.getYaw()+","+gyroAux.getAngle());
-				
+		System.out.println("Yaw: "+yaw);
+		SmartDashboard.putString("Gyro:",out);
+		yawOut=yaw;	
+		yaw=Math.toRadians(yaw);
 		boolean isEqual=PhoenixMath.checkDouble(lastYaw,yaw);
 		
 		if(!hasFailed && isEqual){
 			failStreak++;
-			System.out.println("Fail detected: Streak: "+failStreak);
+			System.out.println("Repeat detected: Streak: "+failStreak);
 		}else{
 			failStreak=0;
 		}
 		
-		if(failStreak == failThreshold){
+		if(failStreak >= failThreshold){
 			
 			System.out.println("Gyro has failed! Switching to auxilliary!");
 			hasFailed=true;
@@ -287,13 +303,10 @@ public class DriveTrain extends SubSystem{
 			case states.FIELD_CENTRIC_W_GYRO_HOLD:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);
 				yawTarget += commandVector[2] * twistToYawScalar;
-				if (Math.abs(yawTarget)
-	                    > 180) {
-	                if (yawTarget > 0) {
-	                    yawTarget -= 360;
-	                } else {
-	                   yawTarget += 360;
-	                }
+	            if (yawTarget > 360) {
+	               yawTarget -= 360;
+	            } else if(yawTarget<0) {
+	               yawTarget += 360;
 	            }
 				setHeadingAng(rotated,yawTarget);
 			break;
@@ -304,6 +317,7 @@ public class DriveTrain extends SubSystem{
 				for(int i=0;i<4;i++){
 					encoders[i].reset();
 				}
+				setStartingAng(0);
 			break;
 			case states.FIELD_CENTRIC_WHEEL_CORRECT:
 				rotated = fieldCentricRotate(commandVector[0], commandVector[1]);

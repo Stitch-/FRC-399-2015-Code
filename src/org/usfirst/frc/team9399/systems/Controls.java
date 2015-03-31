@@ -63,7 +63,7 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
-	public double getOpPadCross(){
+	public double getOpPadPOV(){
 		int pov=op.getPOV();
 		double out=0;
 		if(pov!=-1){
@@ -73,7 +73,7 @@ public class Controls /*extends SubSystem*/{
 				out=-1;
 			}
 		}
-		return out;
+		return out*op.getPOVCount();
 	}
 	
 	

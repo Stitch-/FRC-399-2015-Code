@@ -12,6 +12,7 @@ public class SetStartingAngle extends Command {
 	}
 		
 	protected void initialize() {
+		System.out.println("Setting the starting angle to: "+angle);
 		ss.drivetrain.setStartingAng(angle);
 	}
 

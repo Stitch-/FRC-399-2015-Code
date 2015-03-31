@@ -8,6 +8,12 @@ import edu.wpi.first.wpilibj.command.Command;
 public class SetTalons extends Command{
 	SuperSystem ss;
 	boolean[] commandVals;
+	boolean done=false;
+	
+	public SetTalons(boolean[] in){
+		ss=SuperSystem.getInstance();
+		commandVals=in;
+	}
 	
 	public SetTalons(double timeout,boolean[] in){
 		setTimeout(timeout);
@@ -19,6 +25,7 @@ public class SetTalons extends Command{
 		System.out.println("Runnning Talons");
 		ss.wingeyBits.actuateHook(Wings.wings.LEFT,commandVals[0]);
 		ss.wingeyBits.actuateHook(Wings.wings.RIGHT,commandVals[1]);
+		done=true;
 	}
 	protected void execute() {
 		
@@ -30,6 +37,6 @@ public class SetTalons extends Command{
 		
 	}
 	protected boolean isFinished() {	
-		return this.isTimedOut();
+		return this.isTimedOut()||done;
 	}
 }

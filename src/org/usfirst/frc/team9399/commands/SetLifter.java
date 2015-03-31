@@ -11,7 +11,7 @@ public class SetLifter extends Command{
 	public SetLifter(double timeout,double speed){
 		setTimeout(timeout);
 		ss=SuperSystem.getInstance();
-		this.speed=-speed;
+		this.speed=speed;
 	}
 	
 	protected void initialize() {
@@ -32,7 +32,7 @@ public class SetLifter extends Command{
 	}
 	
 	protected boolean isFinished() {	
-		return this.isTimedOut()||ss.funkyClips.getSwitch();
+		return this.isTimedOut()||(speed<0 && ss.funkyClips.getSwitch(true));
 	}
 }
 

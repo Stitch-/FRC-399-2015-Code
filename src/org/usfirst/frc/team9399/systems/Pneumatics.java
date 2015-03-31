@@ -23,6 +23,7 @@ public class Pneumatics extends SubSystem {
 		public static final int ENABLED=1;
 	}
 	
+	/**Is the compressor active?*/
 	public boolean isCompressing(){
 		return compressor.getPressureSwitchValue();
 	}

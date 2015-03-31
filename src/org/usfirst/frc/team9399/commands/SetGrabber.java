@@ -11,11 +11,12 @@ public class SetGrabber extends Command {
 	
 	public SetGrabber(double timeout, boolean in){
 		setTimeout(timeout);
-		setVal=in;
 		ss=SuperSystem.getInstance();
+		setVal=in;
 	}
 	
 	protected void initialize() {
+		System.out.println("Setting Grabber");
 		ss.funkyClips.actuateClaw(setVal);
 		isDone=true;
 	}

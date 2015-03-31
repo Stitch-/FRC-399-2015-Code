@@ -8,21 +8,18 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class DriveStraight extends Command {
 	SuperSystem ss;
-	double distance,speed;
 	double deltaDistance=0;
 	double p=0.072; //0.9
 	double i=0;
 	double d=0;
-	double start;
+	double startAvg,speed,distance;
 	PIDLoop pid;
-	int encoderID=3; //temporary until I can get an accurate average of all four encoders.
-	boolean turbo;
+	final int encoderID1=3; //temporary until I can get an accurate average of all four encoders.
+	final int encoderID2=2;
+	boolean turbo=true;
 	double checkVal;
 
 	public DriveStraight(double timeout,double distance,double speed,boolean turbo) {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("Timeout must not be negative.  Given:" + timeout);
-        }
 		ss=SuperSystem.getInstance();
         setTimeout(timeout);
         this.distance=distance;
@@ -30,14 +27,29 @@ public class DriveStraight extends Command {
         pid=new PIDLoop(p,i,d);
         this.turbo=turbo;
 	}
+	
+	public DriveStraight(double timeout,double distance,double speed) {
+		ss=SuperSystem.getInstance();
+        setTimeout(timeout);
+        this.distance=distance;
+        this.speed=speed;
+        pid=new PIDLoop(p,i,d);
+	}
+	
 	protected void initialize() {
 		//ss.drivetrain.setState(DriveTrain.states.FIELD_CENTRIC_W_GYRO_HOLD);
-		start=ss.drivetrain.getEncoderDistance(encoderID);
+		double start1=ss.drivetrain.getEncoderDistance(encoderID1);
+		double start2=ss.drivetrain.getEncoderDistance(encoderID2);
+		startAvg=(start1+start2)/2;
 		System.out.println("Driving Straight");
 		ss.drivetrain.setTurbo(turbo);
 	}
 	protected void execute() {
-		deltaDistance=ss.drivetrain.getEncoderDistance(encoderID);//-start;
+		double distance1=ss.drivetrain.getEncoderDistance(encoderID1);
+		double distance2=-ss.drivetrain.getEncoderDistance(encoderID2);
+		deltaDistance=(distance1+distance2)/2;
+		deltaDistance-=startAvg;
+		
 		double powa = pid.correct(distance, -deltaDistance);
 		double[] commandVector={0,speed*powa,0};
 		System.out.println(speed*powa);

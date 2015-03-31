@@ -10,10 +10,7 @@ public class DriveHeading extends Command {
 	double[] heading;
 	
 	public DriveHeading(double timeout,double[] heading) {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("Timeout must not be negative.  Given:" + timeout);
-        }
-		ss=SuperSystem.getInstance();
+    	ss=SuperSystem.getInstance();
         setTimeout(timeout);
         this.heading=heading;
 	}

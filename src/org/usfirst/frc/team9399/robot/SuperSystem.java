@@ -34,13 +34,13 @@ public class SuperSystem {
 				Config.Wings.SWITCH_THRESHOLD,Config.Pneumatics.COMP_ID,
 				Config.Wings.MOTOR_SPEED,Config.Wings.BUTTON_PORTS);
 		
-		funkyClips=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORT,Config.Lifter.ENCODER_PORTS,
+		funkyClips=new Lifter(Config.Lifter.MOTOR_PORTS,Config.Lifter.SOL_PORTS,Config.Lifter.ENCODER_PORTS,
 				Config.Lifter.LEAD_SCREW_CONSTANT,Config.Lifter.ENCODER_TURNS,Config.Lifter.MAX_HEIGHT,
 				Config.Lifter.LIMIT_SWITCH_PORTS,Config.Lifter.SWITCH_THRESHOLD,Config.Lifter.DEADBAND,
 				Config.Lifter.PDP_TERMINALS,Config.Lifter.PID); 
 		funkyClips.setState(Lifter.states.DISABLED);
 		
-		sucker=new Intake(Config.Intake.MOTOR_PORTS,Config.Intake.SPEED_MULT);
+		sucker=new Intake(Config.Intake.MOTOR_PORTS,Config.Intake.SPEED_MULT,Config.Intake.SOL_PORT,Config.Intake.LIMIT_SWITCH_PORT);
 		for(int i=0;i<5;i++){
 			t[i]=new Toggler();
 		}
@@ -50,8 +50,8 @@ public class SuperSystem {
 	public boolean[] toggleControls(){
 		boolean[] out=new boolean[5];
 		boolean[] buttons=new boolean[5];
-    	buttons[0] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_LEFT_WING);
-    	buttons[1] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_RIGHT_WING);
+    	buttons[0] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_CLIPS);
+    	buttons[1] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_INTAKE);
     	buttons[2] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_CLAW);
     	buttons[3] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_LEFT_CLAW);
     	buttons[4] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_RIGHT_CLAW);

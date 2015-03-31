@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class ResetLifter extends Command {
 	SuperSystem ss;
-	double speed=1;
+	double speed=0.5;
 	
 	public ResetLifter(double timeout,double speed){
 		setTimeout(timeout);
@@ -36,8 +36,9 @@ public class ResetLifter extends Command {
 		ss.funkyClips.setSpeed(0);
 	}
 	
-	protected boolean isFinished() {	
-		return this.isTimedOut()||ss.funkyClips.getSwitch();
+	protected boolean isFinished() {
+		//System.out.println(ss.funkyClips.getSwitch(true));
+		return this.isTimedOut()||ss.funkyClips.getSwitch(true);
 	}
 }
 

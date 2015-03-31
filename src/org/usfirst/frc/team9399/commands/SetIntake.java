@@ -28,7 +28,7 @@ public class SetIntake extends Command {
 
 
 	protected boolean isFinished() {
-		return isTimedOut();
+		return isTimedOut()||ss.sucker.getButton();
 	}
 
 	protected void end() {
