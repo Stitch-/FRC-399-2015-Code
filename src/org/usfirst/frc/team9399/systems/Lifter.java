@@ -10,16 +10,16 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 public class Lifter extends SubSystem {
-	VictorSP[] motors=new VictorSP[2];
-	Solenoid grabberSol,lifterSol;
-	Encoder coder;
-	AnalogInput lowerSwitch1,lowerSwitch2, upperSwitch;
+	VictorSP[] motors=new VictorSP[2]; //Motors running the leadscrew
+	Solenoid grabberSol,lifterSol; //Solenoids for actuating lifter clips, unused
+	Encoder coder; //Encoder for measuring distance traveled by lifter, unused
+	AnalogInput lowerSwitch1,lowerSwitch2, upperSwitch; //Analog inputs to get info from switches
 	double leadScrewConstant,maxHeight,minHeight,deadband,startingAmp;
-	double speed=0;
-	int threshold,c1,c2,turns;
-	PowerDistributionPanel pdp;
-	PIDLoop pidLoop;
-	boolean isBottomClosed,isTopClosed=false;
+	double speed=0; //PWN value for leads screw motors
+	int threshold,c1,c2,turns; //threshold for analog, pdp ports for controllers, constant for encoder
+	PowerDistributionPanel pdp; //instance of pdp
+	PIDLoop pidLoop; //pidloop for adjusting power based on pdp readings of amperage, unused
+	boolean isBottomClosed,isTopClosed=false; //booleans representing the states of limit switches
 	
 	
 	
@@ -63,7 +63,7 @@ public class Lifter extends SubSystem {
 		//coder=new Encoder(encoderPorts[0],encoderPorts[1],false);
 		//coder.reset(); //Lifter should be placed in lowest possible positions when starting.
 	}
-	
+	/** States governing lifter**/
 	public class states{
 		public static final int DISABLED=0;
 		public static final int ENABLED=1;

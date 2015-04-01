@@ -4,23 +4,33 @@ package org.usfirst.frc.team9399.systems;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Controls /*extends SubSystem*/{
-	public Joystick left,right,op;
-	final int resetButton = 1;
-	double band;
+	public Joystick left,right,op; //input devices
+	final int resetButton; //the id of the button on both joysticks that is used to reset the gyro 
+	double band; //the deadband value for driver joysticks
 	
+	/**Values representing the different input devices*/
 	public class pads{
 		public static final int LEFT=0;
 		public static final int RIGHT=1;
 		public static final int OP=2;
 	}
+	 
+	/**
+	 * Class to manage inputs from joysticks and gamepad
+	 * @author Aaron Elersich (aelersich1@gmail.com)
+	 * @param ports
+	 * @param deadband
+	 */
 	
-	public Controls(int[] ports,double deadband){
+	public Controls(int[] ports,double deadband,int reset){
 		left=new Joystick(ports[0]);
 		right=new Joystick(ports[1]);
 		op=new Joystick(ports[2]);
 		band = deadband;
+		resetButton=reset;
 	}
 	
+	/**Get driver heading*/
 	public double[] getHeading(){
 		double x=left.getRawAxis(0);
 		double y=left.getRawAxis(1);
@@ -32,6 +42,7 @@ public class Controls /*extends SubSystem*/{
 		return heading;
 	}
 	
+	/**get the heading in tank drive*/
 	public double[] getHeadingTank(){
 		double l=-left.getRawAxis(1);
 		double r=-right.getRawAxis(1);
@@ -43,12 +54,13 @@ public class Controls /*extends SubSystem*/{
 		for(int i=0;i<2;i++){
 			out[i]=deadBand(out[i]);
 		}
-		
+
 		//System.out.println("l " +l + " r " + r + " d " + drive + " s " + strafe + " r " + rotate);
 		
 		return out;
 	}
 	
+	/**get the right op pad joystick*/
 	public double[] getOpPadRight(){
 		double x=op.getRawAxis(2);
 		double y=op.getRawAxis(3);
@@ -56,6 +68,7 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
+	/**get the left op pad joystick*/
 	public double[] getOpPadLeft(){
 		double x=op.getRawAxis(0);
 		double y=op.getRawAxis(1);
@@ -63,6 +76,7 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
+	/**get pov up/down for intake*/
 	public double getOpPadPOV(){
 		int pov=op.getPOV();
 		double out=0;
@@ -76,12 +90,12 @@ public class Controls /*extends SubSystem*/{
 		return out*op.getPOVCount();
 	}
 	
-	
-	public boolean getButton(int c, int button){
+	/**get a button value on a specified device*/
+	public boolean getButton(int device, int button){
 		boolean out;
-		if(c==pads.LEFT){
+		if(device==pads.LEFT){
 			out=left.getRawButton(button);
-		}else if(c==pads.RIGHT){
+		}else if(device==pads.RIGHT){
 			out=right.getRawButton(button);
 		}else{
 			out=op.getRawButton(button);
@@ -89,6 +103,7 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
+	/**Are both reset buttons pressed?*/
 	public boolean isResetPressed(){
 		boolean left,right,out;
 		left=this.left.getRawButton(resetButton);
@@ -97,6 +112,7 @@ public class Controls /*extends SubSystem*/{
 		return out;
 	}
 	
+	/**adjust values according to the deadband*/
 	double deadBand(double val){
 		double out;
 		if(val<band&&val>-band){

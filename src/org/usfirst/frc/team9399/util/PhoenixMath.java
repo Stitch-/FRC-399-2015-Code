@@ -4,6 +4,12 @@ import java.math.BigDecimal;
 
 public abstract class PhoenixMath {
 	
+	
+	/**
+	 * @Author Aaron Elersich
+	 * An class containing a variety of utility methods
+	 */
+	
 	/**
 	 * Converts rectangular form vectors to angular form vectors
 	 * double[] rectangle = {x,y};

@@ -12,34 +12,19 @@ import org.usfirst.frc.team9399.util.SubSystem;
 import org.usfirst.frc.team9399.util.PhoenixMath;
 
 public class DriveTrain extends SubSystem{
-	public static final double nonTurboMax=0.4; //max speed w/out turbo
-	public static final double checkPrecision=10000E20;
-	double startingAng=0;
-	VictorSP[] motors=new VictorSP[4];
-	Encoder[] encoders=new Encoder[4];
-	IMU gyro = IMU.getInstance();
+	final double nonTurboMax=0.4; //max speed w/out turbo
+	//final double checkPrecision=10000E20;
+	double ticksToInches,angOut; //constant for encoders, target rotation value after pid
+	double lastYaw,yawOut,startingAng=0; //the last measured yaw, the current yaw, the angle the robot starts at
 	double[] commandVector = {0,0,0}; //x,y,rotation
-	double[] powers = new double[4];
-	int[] encoderPorts = new int[8];
-	boolean freed=true;
-	PIDLoop pidAng;
-	PIDLoop pidWheel;
-	boolean turbo=false;
-	final boolean pidOnWheels=false;
-	double ticksToInches;
-	double angOut;
-	int failStreak=0;
-	int failThreshold;
-	Gyro gyroAux;
-	double lastYaw,yawOut=0;
-	boolean hasFailed=false;
+	double[] powers = new double[4]; //target motor pwn vals
 	
 	final double cWidth=25; //inches
-	final double cLength=28.5;
+	final double cLength=28.5; 
 	final double wDiameter = 6; // Inch wheels
-	final double wRadius = wDiameter / 2.0;
+	final double wRadius = wDiameter / 2.0; 
 	
-	// For details visit 
+	// For details visit:
 	// http://www.chiefdelphi.com/media/papers/download/2722
 	final double cRotK = ((cWidth + cLength) / 2.0) / wRadius;
 	final double invMatrix[][] = new double[][] {
@@ -49,6 +34,30 @@ public class DriveTrain extends SubSystem{
 		{ 1, 1, -cRotK},
 	};
 	
+	int failStreak=0; //how many times has the gyro repeated its value?
+	int failThreshold; //how many repeats should require the program to switch to the analog gyro?
+	int[] encoderPorts = new int[8]; //the coder ports
+	
+	boolean turbo,hasFailed=false; //is the turbo value on, has the program switched to the analog gyro
+	boolean freed=true; //have the encoders been realeased/not yet instantiated?
+	//final boolean pidOnWheels=false;
+	
+	
+	VictorSP[] motors=new VictorSP[4];
+	Encoder[] encoders=new Encoder[4];
+	IMU gyro = IMU.getInstance();
+	PIDLoop pidAng;
+	PIDLoop pidWheel;
+	Gyro gyroAux;
+	
+	
+	/**
+	 * @Author Aaron Elersich (aelersich1@gmail.com)
+	 * @param ports
+	 * @param encoderPorts
+	 * @param ticks
+	 * @param fails
+	 */
 	//fl.fr.bl.br
 	public DriveTrain(int[] ports, int[] encoderPorts,double ticks,int fails){
 		this.encoderPorts=encoderPorts;
@@ -63,7 +72,7 @@ public class DriveTrain extends SubSystem{
 		failThreshold=fails;
 	}
 	
-	
+	/**states governing the drivetrain*/
 	public class states{
 		public static final int FIELD_CENTRIC = 1;
 		public static final int ROBOT_CENTRIC = 2;
@@ -75,27 +84,47 @@ public class DriveTrain extends SubSystem{
 		public static final int PRINT_FROM_ENCODERS=7;
 	}
 	
+	/**
+	 * initialize the pidController for angle correction
+	 * @param gyro
+	 * @param wheels
+	 */
 	public void initPid(double[] gyro,double[] wheels){
 		pidAng=new PIDLoop(gyro[0],gyro[1],gyro[2]);
 		pidWheel=new PIDLoop(wheels[0],wheels[1],wheels[2]);
 	}
 	
+	/**
+	 * Set the starting angle
+	 * @param in
+	 */
 	public void setStartingAng(double in){
 		gyro.IMUA.zeroYaw();
 		if(gyroAux!=null)gyroAux.reset();
 		startingAng=in;
 	}
 	
+	/**
+	 * Get the current angle
+	 * @return
+	 */
 	public double getYaw(){
 		return yawOut;
 	}
 	
+	/**
+	 * Release the encoders, allowing them to be re-intitialized
+	 */
 	public void freeEncoders(){
 		for(int i=0;i<4;i++){
 			encoders[i]=null;
 		}
+		freed=true;
 	}
 	
+	/**
+	 * Init the encoders
+	 */
 	public void initEncoders(){
 		if(freed){	
 			int firstPort=0;
@@ -111,6 +140,9 @@ public class DriveTrain extends SubSystem{
 	}
 	
 	
+	/**
+	 * re-calibrate both gyros
+	 */
 	public void calibrateGyro(){
 		boolean isCal= true;
 		for(int i = 0; i < 50 && isCal;i++)
@@ -122,10 +154,12 @@ public class DriveTrain extends SubSystem{
 		if(gyroAux!=null)gyroAux.reset();
 	}
 	
+	/**get the distance traveled*/
 	public double getEncoderDistance(int id){
 		return encoders[id].get()*ticksToInches;
 	}
 	
+	/**get the distance based on four encoders, needs work*/
 	public double getEncoderAverage(){
 		double total=0;
 		for(int i=2;i<4;i++){
@@ -138,11 +172,13 @@ public class DriveTrain extends SubSystem{
 		return mean;
 	}
 	
+	/**set the heading vector*/
 	public void setHeading(double[] vector){
 		commandVector=vector;
 		//System.out.println("Powers "+commandVector[0]+" "+commandVector[1]+" "+commandVector[2]);
 	}
 	
+	/**set the heading based on a target angle, rather than joystick vals*/
 	public void setHeadingAng(double[] vector, double angTar){
 		double[] vectorOut = {0,0,0};
 		//double angCurr = /*gyro.getAngle();*/gyro.IMUA.getYaw();
@@ -154,20 +190,23 @@ public class DriveTrain extends SubSystem{
 	}
 	
 	//public void checkDistance
-
+	
+	/**set turbo on/off*/
 	public void setTurbo(boolean in){
 		turbo=in;
 	}
 	
+	/**Set the yaw target*/
 	public void setYawTarget(double in){
 		yawTarget=in;
 	}
 	
+	//return the current pid val for anglular correction, useful for debugging
 	public double getPidVal(){
 		return angOut;
 	}
 	
-	
+	/**set the motors' pwn vals*/
 	private void setMotors(){
 		double max=1;
 		
@@ -210,7 +249,7 @@ public class DriveTrain extends SubSystem{
 		
 	}
 	
-
+	/**correct the strafe and drive vals based on angle*/
 	private double[] fieldCentricRotate(double x, double y)
 	{
 		double[] rotated = new double[2];

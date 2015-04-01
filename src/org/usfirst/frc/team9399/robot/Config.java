@@ -38,7 +38,7 @@ public abstract class Config {
 		*/
 	}
 	
-	public class KeyMap{ //keymap for op pad.
+	public class KeyMap{ //keymap for op pad and driver.
 		/*public static final int TOGGLE_LEFT_WING=4;
 		public static final int TOGGLE_RIGHT_WING=3;*/
 		public static final int TOGGLE_CLAW=2;
@@ -48,6 +48,7 @@ public abstract class Config {
 		public static final int LIFTER_AXIS=1;
 		public static final int TOGGLE_INTAKE=4;
 		public static final int TOGGLE_CLIPS=10;
+		public static final int RESET_GYRO=1;
 	}
 	public static class Pneumatics{
 		public static final int COMP_ID=0;

@@ -21,7 +21,7 @@ public class SuperSystem {
 	}
 	
 	private SuperSystem(){
-		control = new Controls(Config.Controls.CONTROL_PORTS,Config.Controls.DEADBAND);
+		control = new Controls(Config.Controls.CONTROL_PORTS,Config.Controls.DEADBAND,Config.KeyMap.RESET_GYRO);
 		
 		drivetrain = new DriveTrain(Config.DriveTrain.MOTOR_PORTS,Config.DriveTrain.ENC_PORTS,
 				Config.DriveTrain.TICKS_TO_INCHES,Config.DriveTrain.GYRO_FAIL_THRESHOLD);
