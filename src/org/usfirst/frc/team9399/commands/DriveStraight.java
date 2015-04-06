@@ -37,10 +37,12 @@ public class DriveStraight extends Command {
 	}
 	
 	protected void initialize() {
-		//ss.drivetrain.setState(DriveTrain.states.FIELD_CENTRIC_W_GYRO_HOLD);
-		double start1=ss.drivetrain.getEncoderDistance(encoderID1);
+		//ss.drivetrain.setState(DriveTrain.states.FIELD_CENTRIC_W_GYRO_HOLD);\
+		ss.drivetrain.freeEncoders();
+		ss.drivetrain.initEncoders();
+		/*double start1=ss.drivetrain.getEncoderDistance(encoderID1);
 		double start2=ss.drivetrain.getEncoderDistance(encoderID2);
-		startAvg=(start1+start2)/2;
+		startAvg=(start1+start2)/2;*/
 		System.out.println("Driving Straight");
 		ss.drivetrain.setTurbo(turbo);
 	}
@@ -48,11 +50,11 @@ public class DriveStraight extends Command {
 		double distance1=ss.drivetrain.getEncoderDistance(encoderID1);
 		double distance2=-ss.drivetrain.getEncoderDistance(encoderID2);
 		deltaDistance=(distance1+distance2)/2;
-		deltaDistance-=startAvg;
+		//deltaDistance-=startAvg;
 		
 		double powa = pid.correct(distance, -deltaDistance);
 		double[] commandVector={0,speed*powa,0};
-		System.out.println(speed*powa);
+		System.out.println((speed*powa)+"|"+deltaDistance);
 		checkVal=powa;
 		ss.drivetrain.setHeading(commandVector);
 		

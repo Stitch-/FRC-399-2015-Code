@@ -117,6 +117,7 @@ public class DriveTrain extends SubSystem{
 	 */
 	public void freeEncoders(){
 		for(int i=0;i<4;i++){
+			encoders[i].free();
 			encoders[i]=null;
 		}
 		freed=true;
