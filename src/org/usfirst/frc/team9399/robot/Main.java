@@ -31,7 +31,8 @@ public class Main extends IterativeRobot {
 	
 	public void robotInit() {
 		ss = SuperSystem.getInstance();
-		autonChooser.addObject("Grab SRC and drive back straight",new GrabSRCDriveBackStraightDebug());
+		autonChooser.addObject("Grab SRC and drive back straight"
+				,new GrabSRCDriveBackStraightDebug/*Faster*/());
 		autonChooser.addObject("Do nothing", new DoNothing());
 		autonChooser.addObject("Test",new Test());
 		autonChooser.addObject("Grab SRC from step and turn",new GrabSRCAuton());
