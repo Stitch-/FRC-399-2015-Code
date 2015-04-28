@@ -44,7 +44,7 @@ public class DriveStraight extends Command {
 		double start2=ss.drivetrain.getEncoderDistance(encoderID2);
 		startAvg=(start1+start2)/2;*/
 		System.out.println("Driving Straight");
-		ss.drivetrain.setTurbo(turbo);
+		//ss.drivetrain.setTurbo(turbo);
 	}
 	protected void execute() {
 		double distance1=ss.drivetrain.getEncoderDistance(encoderID1);

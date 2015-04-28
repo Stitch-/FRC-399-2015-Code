@@ -38,7 +38,8 @@ public class DriveTrain extends SubSystem{
 	int failThreshold; //how many repeats should require the program to switch to the analog gyro?
 	int[] encoderPorts = new int[8]; //the coder ports
 	
-	boolean turbo,hasFailed=false; //is the turbo value on, has the program switched to the analog gyro
+	boolean hasFailed=false; //is the turbo value on, has the program switched to the analog gyro
+	//boolean turbo;
 	boolean freed=true; //have the encoders been realeased/not yet instantiated?
 	//final boolean pidOnWheels=false;
 	
@@ -193,9 +194,9 @@ public class DriveTrain extends SubSystem{
 	//public void checkDistance
 	
 	/**set turbo on/off*/
-	public void setTurbo(boolean in){
+	/*public void setTurbo(boolean in){
 		turbo=in;
-	}
+	}*/
 	
 	/**Set the yaw target*/
 	public void setYawTarget(double in){
@@ -209,11 +210,11 @@ public class DriveTrain extends SubSystem{
 	
 	/**set the motors' pwn vals*/
 	private void setMotors(){
-		double max=1;
+		//double max=1;
 		
-		if(!turbo){
+		/*if(!turbo){
 			max=nonTurboMax;
-		}
+		}*/
 		for(int wheel = 0; wheel < 4; wheel++)
 		{
 			powers[wheel] = 0;
@@ -221,15 +222,15 @@ public class DriveTrain extends SubSystem{
 			{
 				powers[wheel] += commandVector[i] * invMatrix[wheel][i];
 			}
-			if(turbo){
+			/*if(turbo){
 				max = Math.max(max, Math.abs(powers[wheel]));
-			}
+			}*/
 		}
 		
 		
 		for(int i = 0; i < 4; i ++)
 		{
-			powers[i] = powers[i]*max;
+			powers[i] = powers[i];//*max;
 		}
 		
 		//PhoenixMath.clamp(-1.0, 1.0, powers);

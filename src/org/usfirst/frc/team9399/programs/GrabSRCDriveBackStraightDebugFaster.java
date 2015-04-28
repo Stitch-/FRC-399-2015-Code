@@ -15,7 +15,7 @@ public class GrabSRCDriveBackStraightDebugFaster extends CommandGroup {
 		addParallel(new SetTalons(0.9,talonDisengage));
 		//addSequential(new Wait(0.1));		//addSequential(new DriveStraight(2,-9,1,false));
 		addSequential(new SetWings(0.9,wingCommand));
-		addSequential(new Wait(0.1)); //0.5 //0.25 //redue to 0.1 as bouncing is 'fixed'
+		addSequential(new Wait(0.1)); //0.5 //0.25 //reduce to 0.1 as bouncing is 'fixed'
 		addSequential(new SetTalons(0.2,talonEngage)); //make these parallel
 		addParallel(new DriveStraight(2,40,1)); //27 //40,1 //50,0.7
 		addSequential(new Wait(0.25));//0.1 //may reduce based on time it takes for rcs to settle

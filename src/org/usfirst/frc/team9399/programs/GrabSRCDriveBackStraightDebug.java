@@ -13,7 +13,7 @@ public class GrabSRCDriveBackStraightDebug extends CommandGroup {
 		
 		addSequential(new SetStartingAngle(180));		
 		addParallel(new SetTalons(0.9,talonDisengage));
-		//addSequential(new Wait(0.1));		//addSequential(new DriveStraight(2,-9,1,false));
+		addSequential(new Wait(0.1));		//addSequential(new DriveStraight(2,-9,1,false));
 		addSequential(new SetWings(0.9,wingCommand));
 		addSequential(new Wait(0.25)); //0.5
 		addSequential(new SetTalons(0.2,talonEngage));

@@ -20,7 +20,7 @@ public class Main extends IterativeRobot {
 	boolean[] padButtons;
 	boolean tank;
 	Toggler tankDrive=new Toggler();
-	Toggler turbo=new Toggler();
+	//Toggler turbo=new Toggler();
 	Toggler roboCent=new Toggler();
 	SendableChooser autonChooser=new SendableChooser();
 	Scheduler sch;
@@ -32,7 +32,9 @@ public class Main extends IterativeRobot {
 	public void robotInit() {
 		ss = SuperSystem.getInstance();
 		autonChooser.addObject("Grab SRC and drive back straight"
-				,new GrabSRCDriveBackStraightDebug/*Faster*/());
+				,new GrabSRCDriveBackStraightDebugFaster());
+		autonChooser.addObject("San Diego SRC Grab"
+				,new GrabSRCDriveBackStraightDebug());
 		autonChooser.addObject("Do nothing", new DoNothing());
 		autonChooser.addObject("Test",new Test());
 		autonChooser.addObject("Grab SRC from step and turn",new GrabSRCAuton());
@@ -93,11 +95,11 @@ public class Main extends IterativeRobot {
     }
    
     public void teleopPeriodic(){
-    	boolean toggleTank =  ss.control.getButton(Controls.pads.RIGHT, 12);
-    	boolean toggleTurbo = ss.control.getButton(Controls.pads.LEFT, 12);
-    	boolean toggleCentric = ss.control.getButton(Controls.pads.RIGHT, 15);
+    	boolean toggleTank =  ss.control.getButton(Controls.pads.LEFT, 5);
+    	//boolean toggleTurbo = ss.control.getButton(Controls.pads.LEFT, 12);
+    	boolean toggleCentric = ss.control.getButton(Controls.pads.LEFT, 10);
     	tankDrive.set(toggleTank);
-    	turbo.set(toggleTurbo);
+    	//turbo.set(toggleTurbo);
     	roboCent.set(toggleCentric);
     	
     	//System.out.println(ss.funkyClips.getSwitch(true));
@@ -126,7 +128,7 @@ public class Main extends IterativeRobot {
     	SmartDashboard.putString("Right Talon",wingIndRight);
     	SmartDashboard.putString("Mode",modeInd);
     	SmartDashboard.putNumber("Angle",ss.drivetrain.getYaw());
-    	ss.drivetrain.setTurbo(!turbo.get());
+    	//ss.drivetrain.setTurbo(!turbo.get());
     	
     	//System.out.println(heading[0]+ " "+heading[1]);
     	padButtons=ss.toggleControls();

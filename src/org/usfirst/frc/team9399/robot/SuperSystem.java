@@ -11,6 +11,7 @@ public class SuperSystem {
 	public Lifter funkyClips;
 	public Intake sucker;
 	Toggler[] t=new Toggler[5];
+	boolean init=false;
 	private static SuperSystem instance;
 	
 	public static SuperSystem getInstance(){
@@ -56,15 +57,18 @@ public class SuperSystem {
     	buttons[3] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_LEFT_CLAW);
     	buttons[4] = control.getButton(Controls.pads.OP, Config.KeyMap.TOGGLE_RIGHT_CLAW);
 		for(int i=0;i<5;i++){
+			if((i==3||i==4)&&!init){
+				t[i].set(!t[i].get());
+			}
 			t[i].set(buttons[i]);
 			out[i]=t[i].get();
 		}
+		init=true;
 		return out;
 	}
 	
 	public void disable(){
-		if(t[2].get()){
-			t[2].set(true);
-		}
+		t[2].set(t[2].get());
+		init=false;
 	}
 }
